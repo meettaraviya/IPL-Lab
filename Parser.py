@@ -41,6 +41,30 @@ operator = {
 		"OR":"||",
 	}
 
+class Scope:
+
+	def __init__(self, parent=None):
+		self.symbols = dict()
+		self.parent = parent
+
+class Type:
+
+	def __init__(self, name, indirection, type, width, offset):
+		self.name = name
+		self.indirection = indirection
+		self.type = type
+		self.width = width
+		self.offset = offset
+
+	def setFunctionProperties(self, scope, params, return_type, is_proto=None):
+		self.scope = scope
+		self.params = params
+		self.return_type = return_type
+		self.is_proto = is_proto
+
+global_symbols = Scope()
+current_ST_node = global_symbols
+
 class CFG_Node:
 	block_id, t_id = 0, 0
 	block_code = dict()
@@ -243,23 +267,26 @@ def p_function_list(p):
 		| function function_list"""
 
 def p_function(p):
-	"""function : VOID IDENTIFIER LPAREN paramlist RPAREN LBRACE function_body RBRACE
-		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN LBRACE function_body RBRACE
-		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN SEMICOLON"""
-	# if p[1]!='void':
-	# 	print('Syntax error at \'%s\'. Expected \'void\''%(p[1],))
-	# 	exit(1)
-	# if p[2]!='main':
-	# 	print('Didn\'t expect functions other than main')
-	# 	exit(1)
-	# if p[4]!='':
-	# 	print('Didn\'t expect arguments in main' )
-	# 	exit(1)
+	"""function : VOID IDENTIFIER LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
+		| VOID IDENTIFIER LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
+	global current_ST_node
+	current_ST_node = current_ST_node.parent
+
+
 
 def p_paramlist(p):
 	"""paramlist : DATA_TYPE decl_var 
 		| paramlist COMMA DATA_TYPE decl_var
 		| empty"""
+	if len(p)==2:
+		p[0] = []
+	elif len(p)==3:
+		p[0] = [(p[1], p[2][1], p[2][0])]
+	else:
+		p[0] = p[1] + [(p[3], p[4][1], p[4][0])]
+
 
 
 def p_function_body(p):
@@ -271,6 +298,55 @@ def p_function_body(p):
 	# cfgfile.write(str(cfg))
 
 	p[0] = p[1]
+
+def p_function_dummy(p):
+	"""function_dummy : empty"""
+	global current_ST_node
+	if p[-4] in current_ST_node.symbols and not current_ST_node.symbols[p[-4]].is_proto:
+		print('Declared again: %s'%(p[-4],))
+		exit(1)
+	else:
+		if p[-4] in current_ST_node.symbols:
+			known_params = current_ST_node.symbols[p[-4]].params
+			known_return_type = current_ST_node.symbols[p[-4]].return_type
+
+			if known_return_type!=p[-5]:
+				print('Return type not matching: %s'%(p[-4],))
+				exit(1)
+			else:
+				params_same = True
+				if len(known_params)!=len(p[-2]):
+					params_same = False
+				i = 0
+				while i<len(known_params) and i<len(p[-2]) and params_same:
+					if known_params[i][0]!=p[-2][i][0] or known_params[i][1]!=p[-2][i][1]:
+						params_same = False
+					i += 1
+				if not params_same:
+					print('Function prototype not followed: %s'%(p[-4],))
+					exit(1)
+		scope = Scope(parent=current_ST_node)
+		for param in p[-2]:
+			param_type = Type(param[2], param[1], param[0], 0, 0)
+			scope.symbols[param[2]] = param_type
+		type = Type(p[-4], None, 'FUNCTION', None, 0)
+		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=False)
+		current_ST_node.symbols[p[-4]] = type
+		current_ST_node = scope
+
+
+def p_function_proto_dummy(p):
+	"""function_proto_dummy : empty"""
+	global current_ST_node
+	if p[-4] in current_ST_node.symbols:
+		print('Declared again: %s'%(p[-4],))
+		exit(1)
+	else:
+		scope = Scope(parent=current_ST_node)
+		type = Type(p[-4], None, 'FUNCTION', None, 0)
+		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=True)
+		current_ST_node.symbols[p[-4]] = type
+		current_ST_node = scope
 
 def p_statement_list(p):
 	"""statement_list : statement_list statement
@@ -327,7 +403,12 @@ def p_while_block(p):
 
 def p_declaration(p):
 	"""declaration : DATA_TYPE decl_var_list"""
-	# INCOMPLETE
+	for var in p[2]:
+		if var[0] in current_ST_node.symbols:
+			print('Variable declared again %s'%(var[0],))
+			exit(1)
+		else:
+			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], 0, 0)
 	p[0] = AST_Node('DECL')
 
 def p_decl_var_list(p):
@@ -359,6 +440,12 @@ def p_scalar_var(p):
 		p[0] = AST_Node("ADDR", children = [p[2]])
 	else:
 		p[0] = AST_Node("VAR", value = p[1])
+		checked_node = current_ST_node
+		while checked_node is not None and p[1] not in checked_node.symbols:
+			checked_node = checked_node.parent
+		if checked_node is None:
+			print('Unknown symbol %s'%(p[1],))
+			exit(1)
 
 def p_assignment(p):
 	"""assignment : pointer_var EQUALS expression
@@ -370,6 +457,7 @@ def p_assignment(p):
 		# 	exit(1)
 
 	p[0] = AST_Node("ASGN", children = [p[1],p[3]])
+
 
 def p_expression_add(p):
 	"""expression : expression PLUS expression"""
