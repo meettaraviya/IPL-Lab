@@ -255,26 +255,40 @@ precedence = (
 )
 
 def p_program(p):
-	"""program : declaration_list function_list"""
+	"""program : global_stmt_list"""
 	print("Successfully Parsed")
 
-def p_declaration_list(p):
-	"""declaration_list : declaration_list declaration SEMICOLON
-		| empty"""
+def p_global_stmt_list(p):
+	"""global_stmt_list : empty
+		| global_stmt global_stmt_list"""
 
-def p_function_list(p):
-	"""function_list : function
-		| function function_list"""
+def p_global_stmt(p):
+	"""global_stmt : declaration
+		| function"""
+
+# def p_declaration_list(p):
+# 	"""declaration_list : declaration_list declaration SEMICOLON
+# 		| empty"""
+
+# def p_function_list(p):
+# 	"""function_list : function
+# 		| function function_list"""
 
 def p_function(p):
-	"""function : VOID IDENTIFIER LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
-		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
-		| DATA_TYPE IDENTIFIER LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
-		| VOID IDENTIFIER LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
+	"""function : VOID function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+		| DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+		| DATA_TYPE function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
+		| VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
 	global current_ST_node
 	current_ST_node = current_ST_node.parent
 
-
+def p_function_var(p):
+	"""function_var : IDENTIFIER
+		| ASTERISK function_var"""
+	if p[1]=='*':
+		p[0] = (p[2][0], p[2][1]+1)
+	else:
+		p[0] = (p[1], 0)
 
 def p_paramlist(p):
 	"""paramlist : DATA_TYPE decl_var 
@@ -286,8 +300,6 @@ def p_paramlist(p):
 		p[0] = [(p[1], p[2][1], p[2][0])]
 	else:
 		p[0] = p[1] + [(p[3], p[4][1], p[4][0])]
-
-
 
 def p_function_body(p):
 	"""function_body : statement_list"""
@@ -302,16 +314,16 @@ def p_function_body(p):
 def p_function_dummy(p):
 	"""function_dummy : empty"""
 	global current_ST_node
-	if p[-4] in current_ST_node.symbols and not current_ST_node.symbols[p[-4]].is_proto:
-		print('Declared again: %s'%(p[-4],))
+	if p[-4][0] in current_ST_node.symbols and not current_ST_node.symbols[p[-4][0]].is_proto:
+		print('Declared again: %s'%(p[-4][0],))
 		exit(1)
 	else:
-		if p[-4] in current_ST_node.symbols:
-			known_params = current_ST_node.symbols[p[-4]].params
-			known_return_type = current_ST_node.symbols[p[-4]].return_type
+		if p[-4][0] in current_ST_node.symbols:
+			known_params = current_ST_node.symbols[p[-4][0]].params
+			known_return_type = current_ST_node.symbols[p[-4][0]].return_type
 
 			if known_return_type!=p[-5]:
-				print('Return type not matching: %s'%(p[-4],))
+				print('Return type not matching: %s'%(p[-4][0],))
 				exit(1)
 			else:
 				params_same = True
@@ -323,15 +335,15 @@ def p_function_dummy(p):
 						params_same = False
 					i += 1
 				if not params_same:
-					print('Function prototype not followed: %s'%(p[-4],))
+					print('Function prototype not followed: %s'%(p[-4][0],))
 					exit(1)
 		scope = Scope(parent=current_ST_node)
 		for param in p[-2]:
 			param_type = Type(param[2], param[1], param[0], 0, 0)
 			scope.symbols[param[2]] = param_type
-		type = Type(p[-4], None, 'FUNCTION', None, 0)
+		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', None, 0)
 		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=False)
-		current_ST_node.symbols[p[-4]] = type
+		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
 
 
@@ -357,9 +369,10 @@ def p_statement_list(p):
 		p[0] = AST_Node("STMLIST", children=p[1].children+p[2])
 
 def p_statement(p):
-	"""statement : declaration SEMICOLON
+	"""statement : declaration
 		| assignment SEMICOLON
 		| RETURN expression SEMICOLON
+		| function_call
 		| while_block
 		| if_else_block"""
 	if p[1]=='return':
@@ -402,7 +415,7 @@ def p_while_block(p):
 	p[0] = AST_Node('WHILE', children = [p[3], p[5]])
 
 def p_declaration(p):
-	"""declaration : DATA_TYPE decl_var_list"""
+	"""declaration : DATA_TYPE decl_var_list SEMICOLON"""
 	for var in p[2]:
 		if var[0] in current_ST_node.symbols:
 			print('Variable declared again %s'%(var[0],))
@@ -431,30 +444,36 @@ def p_pointer_var(p):
 	"""pointer_var : ASTERISK pointer_var
 		| ASTERISK scalar_var"""
 	p[0] = AST_Node("DEREF", children = [p[2]])
-
+	p[0].data_type = (p[2].data_type[0], p[2].data_type[1]-1)
+	if p[0].data_type[1]<0:
+		print("Too much indirection: line no  '%d' " % (p.lexer.lineno,))
+		exit(1)
 def p_scalar_var(p):
 	"""scalar_var : IDENTIFIER
-		| AMPERSAND scalar_var
-		| AMPERSAND pointer_var"""
+		| AMPERSAND IDENTIFIER"""
 	if p[1] == '&':
 		p[0] = AST_Node("ADDR", children = [p[2]])
+		var_name = p[2]
 	else:
 		p[0] = AST_Node("VAR", value = p[1])
-		checked_node = current_ST_node
-		while checked_node is not None and p[1] not in checked_node.symbols:
-			checked_node = checked_node.parent
-		if checked_node is None:
-			print('Unknown symbol %s'%(p[1],))
-			exit(1)
+		var_name = p[1]
+
+	checked_node = current_ST_node
+	while checked_node is not None and var_name not in checked_node.symbols:
+		checked_node = checked_node.parent
+	if checked_node is None:
+		print('Unknown symbol %s'%(var_name,))
+		exit(1)
+
+	p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection)
+	if p[1]=='&':
+		p[0].data_type = (p[0].data_type[0], p[0].data_type[1]+1)
 
 def p_assignment(p):
 	"""assignment : pointer_var EQUALS expression
 		| IDENTIFIER EQUALS expression"""
 	if isinstance(p[1], str):
 		p[1] = AST_Node("VAR", value=p[1])
-		# if not p[3].has_var:
-		# 	print("Syntax error at '=' line no  '%d' "%p.lexer.lineno)
-		# 	exit(1)
 
 	p[0] = AST_Node("ASGN", children = [p[1],p[3]])
 
@@ -490,6 +509,14 @@ def p_expression_function_call(p):
 		p[0] = AST_Node("FCALL", children = [p[1], p[3]])
 	else:
 		p[0] = AST_Node("FCALL", children = [p[1], AST_Node("ARGLIST", children=[])])
+
+	checked_node = current_ST_node
+	func_name = p[1]
+	while checked_node is not None and func_name not in checked_node.symbols:
+		checked_node = checked_node.parent
+	if checked_node is None:
+		print('Unknown symbol %s'%(var_name,))
+		exit(1)
 
 def p_arglist(p):
 	"""arglist : arglist COMMA expression
@@ -539,6 +566,10 @@ def p_condition_parenthesis(p):
 def p_expression_base_constant(p):
 	"""expression : CONSTANT"""
 	p[0] = AST_Node("CONST", value = p[1])
+	if isinstance(p[1], int):
+		p[0].data_type = ('int', 0)
+	elif isinstance(p[1], float):
+		p[0].data_type = ('float', 0)
 
 def p_expression_base_var(p):
 	"""expression : pointer_var

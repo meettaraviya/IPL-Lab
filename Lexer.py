@@ -93,11 +93,13 @@ def t_IDENTIFIER(t):
 
 
 def t_CONSTANT(t):
-	r'[0-9]+'
+	r'[0-9]+(\.[0-9]+)?'
 	try:
 		t.value = int(t.value)
 	except ValueError:
-		print('Value too large')
+		t.value = float(t.value)
+	except ValueError:
+		print('Illegal constant')
 		t.value = 0
 	return t
 
