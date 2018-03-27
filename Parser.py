@@ -13,8 +13,9 @@ program = file.read()
 file.close()
 astfile = open(sys.argv[1] + ".ast", 'w')
 cfgfile = open(sys.argv[1] + ".cfg", 'w')
+symfile = open(sys.argv[1] + ".sym", 'w')
 
-if astfile is None:
+if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
 	exit(1)
 
@@ -47,6 +48,17 @@ class Scope:
 		self.symbols = dict()
 		self.parent = parent
 
+	def __str__(self):
+		string = ""
+		string += "Procedure table :-\n"
+		string += "-----------------------------------------------------------------\n"
+		string += "Name\t\t|\tReturn Type  |  Parameter List\n"
+		for symbol,variable in self.symbols.items():
+			if variable.type == 'FUNCTION':
+				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t|\t<Param list>\n'
+
+		return string
+
 class Type:
 
 	def __init__(self, name, indirection, type, width, offset):
@@ -61,6 +73,9 @@ class Type:
 		self.params = params
 		self.return_type = return_type
 		self.is_proto = is_proto
+
+	def __str__(self):
+		return self.type+'*'*self.indirection
 
 global_symbols = Scope()
 current_ST_node = global_symbols
@@ -256,6 +271,8 @@ precedence = (
 
 def p_program(p):
 	"""program : global_stmt_list"""
+	print(str(current_ST_node))
+	symfile.write(str(current_ST_node))
 	print("Successfully Parsed")
 
 def p_global_stmt_list(p):
@@ -281,6 +298,9 @@ def p_function(p):
 		| VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
 	global current_ST_node
 	current_ST_node = current_ST_node.parent
+	if p[1]=='void' and p[2][1]>0:
+		print('void' + '*'*p[2][1] + ' not allowed in function return type')
+		exit(1)
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
@@ -297,9 +317,9 @@ def p_paramlist(p):
 	if len(p)==2:
 		p[0] = []
 	elif len(p)==3:
-		p[0] = [(p[1], p[2][1], p[2][0])]
+		p[0] = [Type(p[2][0], p[2][1], p[1], None, 0)]
 	else:
-		p[0] = p[1] + [(p[3], p[4][1], p[4][0])]
+		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], None, 0)]
 
 def p_function_body(p):
 	"""function_body : statement_list"""
@@ -331,18 +351,19 @@ def p_function_dummy(p):
 					params_same = False
 				i = 0
 				while i<len(known_params) and i<len(p[-2]) and params_same:
-					if known_params[i][0]!=p[-2][i][0] or known_params[i][1]!=p[-2][i][1]:
+					if known_params[i].type!=p[-2][i].type or known_params[i].indirection!=p[-2][i].indirection:
 						params_same = False
 					i += 1
 				if not params_same:
 					print('Function prototype not followed: %s'%(p[-4][0],))
 					exit(1)
 		scope = Scope(parent=current_ST_node)
+		print(p[-4])
 		for param in p[-2]:
-			param_type = Type(param[2], param[1], param[0], 0, 0)
-			scope.symbols[param[2]] = param_type
+			scope.symbols[param.name] = param
 		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', None, 0)
-		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=False)
+		return_type = Type(None, p[-4][1], p[-5], None, 0)
+		type.setFunctionProperties(scope, p[-2], return_type, is_proto=False)
 		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
 
@@ -350,14 +371,14 @@ def p_function_dummy(p):
 def p_function_proto_dummy(p):
 	"""function_proto_dummy : empty"""
 	global current_ST_node
-	if p[-4] in current_ST_node.symbols:
+	if p[-4][0] in current_ST_node.symbols:
 		print('Declared again: %s'%(p[-4],))
 		exit(1)
 	else:
 		scope = Scope(parent=current_ST_node)
 		type = Type(p[-4], None, 'FUNCTION', None, 0)
 		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=True)
-		current_ST_node.symbols[p[-4]] = type
+		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
 
 def p_statement_list(p):
@@ -465,26 +486,45 @@ def p_scalar_var(p):
 		print('Unknown symbol %s'%(var_name,))
 		exit(1)
 
-	p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection)
 	if p[1]=='&':
-		p[0].data_type = (p[0].data_type[0], p[0].data_type[1]+1)
+		p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection+1)
+	else:
+		p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection)
 
 def p_assignment(p):
 	"""assignment : pointer_var EQUALS expression
 		| IDENTIFIER EQUALS expression"""
 	if isinstance(p[1], str):
+		var_name = p[1]
 		p[1] = AST_Node("VAR", value=p[1])
+		while checked_node is not None and var_name not in checked_node.symbols:
+			checked_node = checked_node.parent
+		if checked_node is None:
+			print('Unknown symbol %s'%(var_name,))
+			exit(1)
+		p[1].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection) 
 
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0] = AST_Node("ASGN", children = [p[1],p[3]])
 
 
 def p_expression_add(p):
 	"""expression : expression PLUS expression"""
 	p[0] = AST_Node("PLUS", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = p[3].data_type
 
 def p_expression_subtract(p):
 	"""expression : expression MINUS expression"""
 	p[0] = AST_Node("MINUS", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = p[3].data_type
 
 def p_expression_parenthesis(p):
 	"""expression : LPAREN expression RPAREN"""
@@ -493,30 +533,63 @@ def p_expression_parenthesis(p):
 def p_expression_multiply(p):
 	"""expression : expression ASTERISK expression"""
 	p[0] = AST_Node("MUL", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = p[3].data_type
 
 def p_expression_divide(p):
 	"""expression : expression FSLASH expression"""
 	p[0] = AST_Node("DIV", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = p[3].data_type
 
 def p_expression_negation(p):
 	"""expression : MINUS expression %prec UMINUS"""
 	p[0] = AST_Node("UMINUS", children = [p[2]])
+	p[0].data_type = p[2].data_type
 
 def p_expression_function_call(p):
-	"""expression : IDENTIFIER LPAREN arglist RPAREN
-		| IDENTIFIER LPAREN RPAREN"""
-	if len(p)==5:
-		p[0] = AST_Node("FCALL", children = [p[1], p[3]])
-	else:
-		p[0] = AST_Node("FCALL", children = [p[1], AST_Node("ARGLIST", children=[])])
+	"""expression : function_call"""
+	p[0] = p[1]
 
-	checked_node = current_ST_node
-	func_name = p[1]
-	while checked_node is not None and func_name not in checked_node.symbols:
-		checked_node = checked_node.parent
-	if checked_node is None:
-		print('Unknown symbol %s'%(var_name,))
-		exit(1)
+def p_function_call(p):
+	"""function_call : IDENTIFIER LPAREN arglist RPAREN
+		| IDENTIFIER LPAREN RPAREN
+		| ASTERISK function_call"""
+	if len(p)!=3:
+		if len(p)==5:
+			p[0] = AST_Node("FCALL", children = [p[1], p[3]])
+			arguments = p[3].children
+		else:
+			arguments = []
+			p[0] = AST_Node("FCALL", children = [p[1], AST_Node("ARGLIST", children=[])])
+
+		checked_node = current_ST_node
+		func_name = p[1]
+		while checked_node is not None and func_name not in checked_node.symbols:
+			checked_node = checked_node.parent
+		if checked_node is None:
+			print('Unknown symbol %s'%(func_name,))
+			exit(1)
+		p[0].data_type = (checked_node.symbols[func_name].return_type.type ,checked_node.symbols[func_name].return_type.indirection)
+		params = checked_node.symbols[func_name].params
+		if len(arguments)!=len(params):
+			print("Wrong number of arguments: line no  '%d' " % (p.lexer.lineno,))
+		else:
+			for i in range(len(arguments)):
+				if arguments[i].data_type[0]!=params[i].type or arguments[i].data_type[1]!=params[i].indirection:
+					print("Wrong %dth argument type: line no  '%d' " % ( i+1, p.lexer.lineno,))
+
+	else:
+		p[0] = AST_Node('DEREF', children=[p[2]])
+		p[0].data_type = (p[2].data_type[0], p[2].data_type[1]-1)
+		if p[0].data_type[1]<0:
+			print("Too much indirection: line no  '%d' " % (p.lexer.lineno,))
+			exit(1)
+		
 
 def p_arglist(p):
 	"""arglist : arglist COMMA expression
@@ -530,34 +603,66 @@ def p_arglist(p):
 def p_condition_ee(p):
 	"""condition : expression EE expression"""
 	p[0] = AST_Node("EQ", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_ne(p):
 	"""condition : expression NE expression"""
 	p[0] = AST_Node("NE", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_lt(p):
 	"""condition : expression LT expression"""
 	p[0] = AST_Node("LT", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_gt(p):
 	"""condition : expression GT expression"""
 	p[0] = AST_Node("GT", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_lte(p):
 	"""condition : expression LTE expression"""
 	p[0] = AST_Node("LE", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_gte(p):
 	"""condition : expression GTE expression"""
 	p[0] = AST_Node("GE", children = [p[1],p[3]])
+	if p[1].data_type!=p[3].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_land(p):
 	"""condition : condition AMPERSAND AMPERSAND condition %prec LAND"""
 	p[0] = AST_Node("AND", children = [p[1], p[4]])
+	if p[1].data_type!=p[4].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_lor(p):
 	"""condition : condition PIPE PIPE condition %prec LOR"""
 	p[0] = AST_Node("OR", children = [p[1], p[4]])
+	if p[1].data_type!=p[4].data_type:
+		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	p[0].data_type = ('bool', 0)
 
 def p_condition_parenthesis(p):
 	"""condition : LPAREN condition RPAREN"""
@@ -589,3 +694,4 @@ yacc.yacc()
 yacc.parse(program, debug=False)
 astfile.close()
 cfgfile.close()
+symfile.close()
