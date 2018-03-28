@@ -55,8 +55,24 @@ class Scope:
 		string += "Name\t\t|\tReturn Type  |  Parameter List\n"
 		for symbol,variable in self.symbols.items():
 			if variable.type == 'FUNCTION':
-				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t|\t<Param list>\n'
-
+				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t|\t%s\n'%(variable.getParams(),)
+		string += "-----------------------------------------------------------------\n"
+		string += "Variable table :- \n"
+		string += "-----------------------------------------------------------------\n"
+		string += "Name\t|\tScope\t\t|\tBase Type  |  Derived Type\n"
+		string += "-----------------------------------------------------------------\n"
+		for symbol,variable in self.symbols.items():
+			if variable.type != 'FUNCTION':
+				string += '%s\t\t|\tglobal\t\t|\t%s\t   |\t'%(variable.name, variable.type)+'*'*variable.indirection+'\n'
+		for symbol,variable in self.symbols.items():
+			if variable.type == 'FUNCTION':
+				string+='\n'
+				function_ST = variable.scope
+				for symbol,local_variable in function_ST.symbols.items():
+					string += '%s\t\t|\tprocedure %s\t|\t%s\t   |\t'%(local_variable.name, variable.name, local_variable.type)+'*'*variable.indirection+'\n'
+		string += "-----------------------------------------------------------------\n"
+		string += "-----------------------------------------------------------------\n"
+				
 		return string
 
 class Type:
@@ -74,8 +90,13 @@ class Type:
 		self.return_type = return_type
 		self.is_proto = is_proto
 
+	def getParams(self):
+		return '{%s}'%(','.join(["'%s' : '%s'"%(k.name,str(k)) for k in self.params]),)
+
 	def __str__(self):
 		return self.type+'*'*self.indirection
+
+	__repr__ = __str__
 
 global_symbols = Scope()
 current_ST_node = global_symbols
@@ -84,6 +105,7 @@ class CFG_Node:
 	block_id, t_id = 0, 0
 	block_code = dict()
 	block_goto = [None]
+
 	def __init__(self, astNode, new_block = False, parent=''):
 
 		self.children = []
@@ -151,8 +173,7 @@ class CFG_Node:
 				self.code += child.code
 
 		else:
-			print (astNode.name)
-			raise Exception
+			raise Exception("Did not implement AST for %s node"%(astNode.name,))
 
 	def buildGraph(self, astNode, nextBlock = -1):
 		
@@ -224,15 +245,8 @@ class AST_Node:
 		if children is not None:
 			self.children = children
 			self.leaf = False
-			# self.has_var = False
-			# for child in children:
-				# self.has_var = self.has_var or child.has_var
 		
 		else:
-			# if self.name=="CONST":
-			# 	self.has_var = False
-			# else:
-			# 	self.has_var = True
 			self.children = []
 			self.leaf = True
 	
@@ -271,7 +285,6 @@ precedence = (
 
 def p_program(p):
 	"""program : global_stmt_list"""
-	print(str(current_ST_node))
 	symfile.write(str(current_ST_node))
 	print("Successfully Parsed")
 
@@ -343,27 +356,39 @@ def p_function_dummy(p):
 			known_return_type = current_ST_node.symbols[p[-4][0]].return_type
 
 			if known_return_type!=p[-5]:
-				print('Return type not matching: %s'%(p[-4][0],))
+				print('Return type not matching with prototype: %s'%(p[-4][0],))
 				exit(1)
 			else:
-				params_same = True
+				params_match = True
+
 				if len(known_params)!=len(p[-2]):
-					params_same = False
+					params_match = False
 				i = 0
-				while i<len(known_params) and i<len(p[-2]) and params_same:
+				while i<len(known_params) and i<len(p[-2]):
 					if known_params[i].type!=p[-2][i].type or known_params[i].indirection!=p[-2][i].indirection:
-						params_same = False
+						params_match = False
+						break
 					i += 1
-				if not params_same:
-					print('Function prototype not followed: %s'%(p[-4][0],))
+				if not params_match:
+					print('Parameter %d not matching with prototype: %s'%(i,p[-4][0],))
 					exit(1)
+
 		scope = Scope(parent=current_ST_node)
-		print(p[-4])
 		for param in p[-2]:
 			scope.symbols[param.name] = param
 		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', None, 0)
 		return_type = Type(None, p[-4][1], p[-5], None, 0)
 		type.setFunctionProperties(scope, p[-2], return_type, is_proto=False)
+		param_same, param_name, prev_param = False, None, set()
+		for param in p[-2]:
+			param_name = param.name
+			if param_name in prev_param:
+				param_same = True
+				break
+			prev_param.add(param_name)
+		if param_same:
+			print('Parameter %s declared multiple time, line number %d\n'%(param_name,p.lexer.lineno,))
+			exit(1)
 		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
 
@@ -578,10 +603,12 @@ def p_function_call(p):
 		params = checked_node.symbols[func_name].params
 		if len(arguments)!=len(params):
 			print("Wrong number of arguments: line no  '%d' " % (p.lexer.lineno,))
+			exit(1)
 		else:
 			for i in range(len(arguments)):
 				if arguments[i].data_type[0]!=params[i].type or arguments[i].data_type[1]!=params[i].indirection:
 					print("Wrong %dth argument type: line no  '%d' " % ( i+1, p.lexer.lineno,))
+					exit(1)
 
 	else:
 		p[0] = AST_Node('DEREF', children=[p[2]])
