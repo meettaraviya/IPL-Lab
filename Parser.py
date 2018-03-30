@@ -91,7 +91,8 @@ class Type:
 		self.is_proto = is_proto
 
 	def getParams(self):
-		return '{%s}'%(','.join(["'%s' : '%s'"%(k.name,str(k)) for k in self.params]),)
+		return ', '.join([param.type + ' ' + '*'*param.indirection + param.name for param in self.params])
+		# return '{%s}'%(','.join(["'%s' : '%s'"%(k.name,str(k)) for k in self.params]),)
 
 	def __str__(self):
 		return self.type+'*'*self.indirection
