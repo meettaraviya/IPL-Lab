@@ -95,6 +95,7 @@ class Type:
 
 	def __str__(self):
 		return self.type+'*'*self.indirection
+		# return str(self.__dict__)
 
 	__repr__ = __str__
 
@@ -254,7 +255,37 @@ class AST_Node:
 		
 		if self.leaf:
 			return '\n' + self.name+'('+str(self.value)+')'
-		
+
+		elif self.name == 'FUNCTION':
+
+			if self.children[1][0]!='main':
+
+				ast_str = '\n'
+				ast_str += 'FUNCTION %s\n'%(self.children[1][0])
+				ast_str += 'PARAMS (%s)\n'%(', '.join([param.type + ' ' + '*'*param.indirection + param.name for param in self.children[2]]))
+				ast_str += 'RETURNS %s'%('*'*self.children[1][1]+self.children[0])
+				ast_str += str(self.children[3]).replace('\n', '\n\t')
+				ast_str += str(self.children[4])+'\n'
+				return ast_str
+
+			else:
+
+				ast_str = '\n'
+				ast_str = 'Function Main\n'
+				ast_str += 'PARAMS(%s) \n'%(', '.join([param.type + ' ' + '*'*param.indirection + param.name for param in self.children[2]]))
+				ast_str += 'RETURNS %s'%(self.children[0]+'*'*self.children[1][1])
+				ast_str += str(self.children[3]).replace('\n', '\n\t')+'\n'
+				return ast_str
+
+		elif self.name == 'FCALL':
+
+			ast_str = '\nCALL %s( \n'%(self.children[0])
+			args = self.children[1].children
+			args_str = '\n,'.join([str(arg) for arg in args])
+			ast_str += args_str.replace('\n','\n\t').strip('\n')
+			ast_str += '\n )'
+			return ast_str
+
 		else:
 			ast_str = '\n' + self.name + '\n('
 			sep = '\n,'
@@ -267,8 +298,6 @@ class AST_Node:
 			if self.name!='STMLIST':
 				ast_str += '\n)'
 			return ast_str
-
-	__repr__ = __str__
 
 
 precedence = (
@@ -296,14 +325,6 @@ def p_global_stmt(p):
 	"""global_stmt : declaration
 		| function"""
 
-# def p_declaration_list(p):
-# 	"""declaration_list : declaration_list declaration SEMICOLON
-# 		| empty"""
-
-# def p_function_list(p):
-# 	"""function_list : function
-# 		| function function_list"""
-
 def p_function(p):
 	"""function : VOID function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
 		| DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
@@ -314,6 +335,12 @@ def p_function(p):
 	if p[1]=='void' and p[2][1]>0:
 		print('void' + '*'*p[2][1] + ' not allowed in function return type')
 		exit(1)
+	if len(p)>8:
+		if p[6].return_type.type!=p[8][1].data_type.type or p[6].return_type.indirection != p[8][1].data_type.indirection:
+			print('Return type does not match with definition: line %d'%(p.lexer.lineno))
+			exit(1)
+		p[0] = AST_Node('FUNCTION', children=[p[1], p[2], p[4], p[8][0], p[8][1]])
+		astfile.write(str(p[0]))
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
@@ -335,14 +362,19 @@ def p_paramlist(p):
 		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], None, 0)]
 
 def p_function_body(p):
-	"""function_body : statement_list"""
-	astfile.write(str(p[1]))
-	
-	# cfg = CFG_Node(p[1], new_block = True)
-	# cfg.buildGraph(p[1])
-	# cfgfile.write(str(cfg))
+	"""function_body : statement_list return_statement"""	
+	p[0] = (p[1],p[2])
 
-	p[0] = p[1]
+def p_return_statement(p):
+	"""return_statement : RETURN expression SEMICOLON
+		| RETURN SEMICOLON
+		| empty"""
+	if len(p)==4:
+		p[0] = AST_Node('RETURN ', children=[p[2]])
+		p[0].data_type = Type(None, p[2].data_type[1], p[2].data_type[0], None, 0)
+	else:
+		p[0] = AST_Node('RETURN ', children=[])
+		p[0].data_type = Type(None, 0, 'void', None, 0)
 
 def p_function_dummy(p):
 	"""function_dummy : empty"""
@@ -351,11 +383,11 @@ def p_function_dummy(p):
 		print('Declared again: %s'%(p[-4][0],))
 		exit(1)
 	else:
+		return_type = Type(None, p[-4][1], p[-5], None, 0)
 		if p[-4][0] in current_ST_node.symbols:
 			known_params = current_ST_node.symbols[p[-4][0]].params
 			known_return_type = current_ST_node.symbols[p[-4][0]].return_type
-
-			if known_return_type!=p[-5]:
+			if known_return_type.type!=return_type.type or known_return_type.indirection!=return_type.indirection:
 				print('Return type not matching with prototype: %s'%(p[-4][0],))
 				exit(1)
 			else:
@@ -377,7 +409,6 @@ def p_function_dummy(p):
 		for param in p[-2]:
 			scope.symbols[param.name] = param
 		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', None, 0)
-		return_type = Type(None, p[-4][1], p[-5], None, 0)
 		type.setFunctionProperties(scope, p[-2], return_type, is_proto=False)
 		param_same, param_name, prev_param = False, None, set()
 		for param in p[-2]:
@@ -391,6 +422,7 @@ def p_function_dummy(p):
 			exit(1)
 		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
+		p[0] = type
 
 
 def p_function_proto_dummy(p):
@@ -401,8 +433,9 @@ def p_function_proto_dummy(p):
 		exit(1)
 	else:
 		scope = Scope(parent=current_ST_node)
-		type = Type(p[-4], None, 'FUNCTION', None, 0)
-		type.setFunctionProperties(scope, p[-2], p[-5], is_proto=True)
+		type = Type(p[-4][0], None, 'FUNCTION', None, 0)
+		return_type = Type(None, p[-4][1], p[-5], None, 0)
+		type.setFunctionProperties(scope, p[-2], return_type, is_proto=True)
 		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
 
@@ -416,14 +449,11 @@ def p_statement_list(p):
 
 def p_statement(p):
 	"""statement : declaration
-		| assignment SEMICOLON
-		| RETURN expression SEMICOLON
-		| function_call
+		| assignment
+		| function_call SEMICOLON
 		| while_block
 		| if_else_block"""
-	if p[1]=='return':
-		p[0] = [AST_Node('RETURN', children=[p[2]])]
-	elif p[1].name=='DECL':
+	if p[1].name=='DECL':
 		p[0] = []
 	else:
 		p[0] = [p[1]]
@@ -517,11 +547,12 @@ def p_scalar_var(p):
 		p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection)
 
 def p_assignment(p):
-	"""assignment : pointer_var EQUALS expression
-		| IDENTIFIER EQUALS expression"""
+	"""assignment : pointer_var EQUALS expression SEMICOLON
+		| IDENTIFIER EQUALS expression SEMICOLON"""
 	if isinstance(p[1], str):
 		var_name = p[1]
 		p[1] = AST_Node("VAR", value=p[1])
+		checked_node = current_ST_node
 		while checked_node is not None and var_name not in checked_node.symbols:
 			checked_node = checked_node.parent
 		if checked_node is None:
@@ -599,7 +630,7 @@ def p_function_call(p):
 		if checked_node is None:
 			print('Unknown symbol %s'%(func_name,))
 			exit(1)
-		p[0].data_type = (checked_node.symbols[func_name].return_type.type ,checked_node.symbols[func_name].return_type.indirection)
+		p[0].data_type = (checked_node.symbols[func_name].return_type.type, checked_node.symbols[func_name].return_type.indirection)
 		params = checked_node.symbols[func_name].params
 		if len(arguments)!=len(params):
 			print("Wrong number of arguments: line no  '%d' " % (p.lexer.lineno,))
