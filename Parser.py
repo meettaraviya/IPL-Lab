@@ -102,24 +102,23 @@ class Type:
 
 global_symbols = Scope()
 current_ST_node = global_symbols
-
+block_id, t_id = -1, 0
+block_code = dict()
+block_goto = [None]
 class CFG_Node:
-	block_id, t_id = 0, 0
-	block_code = dict()
-	block_goto = [None]
 
 	def __init__(self, astNode, new_block = False, parent=''):
-
+		global block_id, t_id, block_code
 		self.children = []
 
 		child_new_block = new_block
 
-		if new_block and (astNode.name=='ASGN' or (parent=='IF' or parent=='WHILE')):
-			CFG_Node.block_id += 1
-			CFG_Node.block_goto.append(None)
-			CFG_Node.block_code[CFG_Node.block_id] = []
+		if new_block and (astNode.name=='ASGN' or (astNode.name=='FCALL' and astNode.is_statement) or (parent=='IF' or parent=='WHILE')):
+			block_id += 1
+			block_goto.append(None)
+			block_code[block_id] = []
 
-		self.block = CFG_Node.block_id
+		self.block = block_id
 
 		child_parent = astNode.name
 
@@ -131,16 +130,32 @@ class CFG_Node:
 
 		if astNode.name == "ASGN":
 			self.code = self.children[1].code + [(self.children[0].address,"=", self.children[1].address)]
-			CFG_Node.block_code[self.block] += self.code
+			block_code[self.block] += self.code
+		
+		elif astNode.name == "ARGLIST":
+			self.code = []
+			self.address = []
+			for child in self.children:
+				self.code += child.code
+				self.address += [child.address]
+
+		elif astNode.name == "FCALL" and not astNode.is_statement:
+			self.address = astNode.value + "(" + ", ".join([str(param) for param in self.children[0].address]) + ")"
+			self.code = self.children[0].code
+		
+		elif astNode.name == "FCALL" and astNode.is_statement:
+			self.address = astNode.value + "(" + ", ".join([str(param) for param in self.children[0].address]) + ")"
+			self.code = self.children[0].code + [self.address]
+			block_code[self.block] += self.code
 
 		elif astNode.name in operator:
-			self.address = 't' + str(CFG_Node.t_id)
-			CFG_Node.t_id += 1
+			self.address = 't' + str(t_id)
+			t_id += 1
 			self.code = self.children[0].code + self.children[1].code + [(self.address, '=', self.children[0].address, operator[astNode.name], self.children[1].address)]
 	
 		elif astNode.name == "UMINUS":
-			self.address = 't' + str(CFG_Node.t_id)
-			CFG_Node.t_id += 1
+			self.address = 't' + str(t_id)
+			t_id += 1
 			self.code = self.children[0].code + [(self.address, '=', '-', self.children[0].address)]
 
 		elif astNode.name == "DEREF":
@@ -159,13 +174,13 @@ class CFG_Node:
 			self.code = []
 			self.address = self.children[0].address
 			self.block = self.children[0].block
-			CFG_Node.block_code[self.children[0].block] = self.children[0].code
+			block_code[self.children[0].block] = self.children[0].code
 	
 		elif astNode.name == "WHILE":
 			self.code = []
 			self.address = self.children[0].address
 			self.block = self.children[0].block
-			CFG_Node.block_code[self.children[0].block] = self.children[0].code
+			block_code[self.children[0].block] = self.children[0].code
 	
 		elif astNode.name == "STMLIST":
 			self.code = []
@@ -175,12 +190,12 @@ class CFG_Node:
 				self.code += child.code
 
 		else:
-			raise Exception("Did not implement AST for %s node"%(astNode.name,))
+			raise Exception("Did not implement CFG for %s node"%(astNode.name,))
 
 	def buildGraph(self, astNode, nextBlock = -1):
-		
+		global block_goto
 		if nextBlock==-1:
-			nextBlock = len(CFG_Node.block_code)+1
+			nextBlock = block_id + 1
 
 		if astNode.name=='IF':
 
@@ -191,24 +206,24 @@ class CFG_Node:
 					ifTarget = nextBlock
 				if len(self.children[2].children)==0:
 					elseTarget = nextBlock
-				CFG_Node.block_goto[self.children[0].block] = (ifTarget, elseTarget, True, self.address)
+				block_goto[self.children[0].block] = (ifTarget, elseTarget, True, self.address)
 				self.children[1].buildGraph(astNode.children[1], nextBlock)
 				self.children[2].buildGraph(astNode.children[2], nextBlock)
 			elif len(self.children)==2:
 				ifTarget = self.children[1].block
 				if len(self.children[1].children)==0:
 					ifTarget = nextBlock
-				CFG_Node.block_goto[self.children[0].block] = (ifTarget, nextBlock, True, self.address)
+				block_goto[self.children[0].block] = (ifTarget, nextBlock, True, self.address)
 				self.children[1].buildGraph(astNode.children[1], nextBlock)
 
 
 		elif astNode.name=='WHILE':
 
 			if len(self.children)==2:
-				CFG_Node.block_goto[self.children[0].block] = (self.children[1].block, nextBlock, True, self.address)
+				block_goto[self.children[0].block] = (self.children[1].block, nextBlock, True, self.address)
 				self.children[1].buildGraph(astNode.children[1], self.children[0].block)
 			else:
-				CFG_Node.block_goto[self.children[0].block] = (self.children[0].block, nextBlock, True, self.address)
+				block_goto[self.children[0].block] = (self.children[0].block, nextBlock, True, self.address)
 
 		elif astNode.name=='STMLIST':
 
@@ -220,22 +235,30 @@ class CFG_Node:
 
 		else:
 
-			CFG_Node.block_goto[self.block] = (nextBlock, nextBlock, False)
+			block_goto[self.block] = (nextBlock, nextBlock, False)
 
 
-	def __str__(self):
+	def to_str(self, start_block, is_main):
+		global block_code, block_goto, block_id
 		cfg_str = ''
-		for block,code in CFG_Node.block_code.items():
+		for block,code in block_code.items():
+			if (block < start_block):
+				continue
 			cfg_str += "<bb " + str(block) + ">\n"
 			for line in code:
 				cfg_str += ' '.join([str(word) for word in line])+'\n'
-			t = CFG_Node.block_goto[block]
+			t = block_goto[block]
 			if t[2]:
 				cfg_str += 'if(%s) goto <bb %d>\nelse goto <bb %d>\n'%(t[3], t[0], t[1])
 			else:
 				cfg_str += 'goto <bb %d>\n'%(t[0],)
 			cfg_str += '\n'
-		cfg_str += '<bb %d>\nEnd\n'%(CFG_Node.block_id+1,)
+		if is_main:
+			cfg_str += '<bb %d>\nEnd\n'%(block_id + 1,)
+		else:
+			cfg_str += '<bb %d>\nreturn\n'%(block_id + 1,)
+		block_id += 1
+		block_goto.append(None)
 		return cfg_str
 	
 class AST_Node:
@@ -280,8 +303,8 @@ class AST_Node:
 
 		elif self.name == 'FCALL':
 
-			ast_str = '\nCALL %s( \n'%(self.children[0])
-			args = self.children[1].children
+			ast_str = '\nCALL %s( \n'%(self.value)
+			args = self.children[0].children
 			args_str = '\n,'.join([str(arg) for arg in args])
 			ast_str += args_str.replace('\n','\n\t').strip('\n')
 			ast_str += '\n )'
@@ -331,7 +354,7 @@ def p_function(p):
 		| DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
 		| DATA_TYPE function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 		| VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
-	global current_ST_node
+	global current_ST_node, block_id
 	current_ST_node = current_ST_node.parent
 	if p[1]=='void' and p[2][1]>0:
 		print('void' + '*'*p[2][1] + ' not allowed in function return type')
@@ -341,7 +364,14 @@ def p_function(p):
 			print('Return type does not match with definition: line %d'%(p.lexer.lineno))
 			exit(1)
 		p[0] = AST_Node('FUNCTION', children=[p[1], p[2], p[4], p[8][0], p[8][1]])
+		function_name = p[2][0]
 		astfile.write(str(p[0]))
+		start_block = block_id
+		ast_node = p[8][0]
+		cfg_node = CFG_Node(ast_node, new_block=True, parent = '')
+		cfg_node.buildGraph(ast_node)
+		cfgfile.write("\nfunction " + function_name + "()\n")
+		cfgfile.write(cfg_node.to_str(start_block, function_name == "main"))
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
@@ -454,6 +484,8 @@ def p_statement(p):
 		| function_call SEMICOLON
 		| while_block
 		| if_else_block"""
+	if p[1].name=='FCALL':
+		p[1].is_statement = True
 	if p[1].name=='DECL':
 		p[0] = []
 	else:
@@ -618,11 +650,13 @@ def p_function_call(p):
 		| ASTERISK function_call"""
 	if len(p)!=3:
 		if len(p)==5:
-			p[0] = AST_Node("FCALL", children = [p[1], p[3]])
+			p[0] = AST_Node("FCALL", children = [p[3]], value = p[1])
+			p[0].is_statement = False
 			arguments = p[3].children
 		else:
 			arguments = []
-			p[0] = AST_Node("FCALL", children = [p[1], AST_Node("ARGLIST", children=[])])
+			p[0] = AST_Node("FCALL", children = [AST_Node("ARGLIST", children=[])], value = p[1])
+			p[0].is_statement = False
 
 		checked_node = current_ST_node
 		func_name = p[1]
