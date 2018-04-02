@@ -409,7 +409,7 @@ def p_return_statement(p):
 		p[0] = AST_Node('RETURN ', children=[p[2]])
 		p[0].data_type = Type(None, p[2].data_type[1], p[2].data_type[0], None, 0)
 
-		if hasattr(p[3],"is_identifier"):
+		if hasattr(p[2],"is_identifier") and p[2].data_type[1] == 0:
 			print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 			exit(1)
 
