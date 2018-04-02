@@ -120,7 +120,6 @@ class CFG_Node:
 			block_code[block_id] = []
 
 		self.block = block_id
-
 		child_parent = astNode.name
 
 		for child in astNode.children:
@@ -409,6 +408,11 @@ def p_return_statement(p):
 	if len(p)==4:
 		p[0] = AST_Node('RETURN ', children=[p[2]])
 		p[0].data_type = Type(None, p[2].data_type[1], p[2].data_type[0], None, 0)
+
+		if hasattr(p[3],"is_identifier"):
+			print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+			exit(1)
+
 	else:
 		p[0] = AST_Node('RETURN ', children=[])
 		p[0].data_type = Type(None, 0, 'void', None, 0)
@@ -567,7 +571,7 @@ def p_scalar_var(p):
 	"""scalar_var : IDENTIFIER
 		| AMPERSAND IDENTIFIER"""
 	if p[1] == '&':
-		p[0] = AST_Node("ADDR", children = [p[2]])
+		p[0] = AST_Node("ADDR", children = [AST_Node("VAR", value = p[2])])
 		var_name = p[2]
 	else:
 		p[0] = AST_Node("VAR", value = p[1])
@@ -582,8 +586,10 @@ def p_scalar_var(p):
 
 	if p[1]=='&':
 		p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection+1)
+		p[0].is_identifier = False
 	else:
 		p[0].data_type = (checked_node.symbols[var_name].type, checked_node.symbols[var_name].indirection)
+		p[0].is_identifier = True
 
 def p_assignment(p):
 	"""assignment : pointer_var EQUALS expression SEMICOLON
@@ -602,6 +608,13 @@ def p_assignment(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+
+	if  hasattr(p[3],"is_identifier"):
+		if p[3].is_identifier:
+			print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+			exit(1)
+
+
 	p[0] = AST_Node("ASGN", children = [p[1],p[3]])
 
 
@@ -614,6 +627,9 @@ def p_expression_add(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_subtract(p):
@@ -624,6 +640,9 @@ def p_expression_subtract(p):
 		exit(1)
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = p[3].data_type
 
@@ -640,6 +659,9 @@ def p_expression_multiply(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_divide(p):
@@ -651,6 +673,9 @@ def p_expression_divide(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_negation(p):
@@ -659,6 +684,9 @@ def p_expression_negation(p):
 	p[0].data_type = p[2].data_type
 	if p[2].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[2],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 
 def p_expression_function_call(p):
@@ -723,6 +751,9 @@ def p_condition_ee(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_ne(p):
@@ -733,6 +764,9 @@ def p_condition_ne(p):
 		exit(1)
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -745,6 +779,9 @@ def p_condition_lt(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_gt(p):
@@ -755,6 +792,9 @@ def p_condition_gt(p):
 		exit(1)
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -767,6 +807,9 @@ def p_condition_lte(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_gte(p):
@@ -777,6 +820,9 @@ def p_condition_gte(p):
 		exit(1)
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -789,6 +835,9 @@ def p_condition_land(p):
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_lor(p):
@@ -799,6 +848,9 @@ def p_condition_lor(p):
 		exit(1)
 	if p[1].data_type[1] != 0:
 		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
+	if hasattr(p[1],"is_identifier") or hasattr(p[3],"is_identifier"):
+		print('direct use of non pointer variable %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
