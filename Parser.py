@@ -53,7 +53,8 @@ class Scope:
 		string += "Procedure table :-\n"
 		string += "-----------------------------------------------------------------\n"
 		string += "Name\t\t|\tReturn Type  |  Parameter List\n"
-		for symbol,variable in self.symbols.items():
+		for symbol in sorted(self.symbols.keys()):
+			variable = self.symbols[symbol]
 			if variable.type == 'FUNCTION':
 				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t|\t%s\n'%(variable.getParams(),)
 		string += "-----------------------------------------------------------------\n"
@@ -61,11 +62,11 @@ class Scope:
 		string += "-----------------------------------------------------------------\n"
 		string += "Name\t|\tScope\t\t|\tBase Type  |  Derived Type\n"
 		string += "-----------------------------------------------------------------\n"
-		for symbol,variable in self.symbols.items():
+		for symbol in sorted(self.symbols.keys()):
+			variable = self.symbols[symbol]
 			if variable.type != 'FUNCTION':
 				string += '%s\t\t|\tglobal\t\t|\t%s\t   |\t'%(variable.name, variable.type)+'*'*variable.indirection+'\n'
-		for symbol,variable in self.symbols.items():
-			if variable.type == 'FUNCTION':
+			else:
 				string+='\n'
 				function_ST = variable.scope
 				for symbol,local_variable in function_ST.symbols.items():
@@ -113,7 +114,7 @@ class CFG_Node:
 
 		child_new_block = new_block
 
-		if new_block and (astNode.name=='ASGN' or (astNode.name=='FCALL' and astNode.is_statement) or (parent=='IF' or parent=='WHILE')):
+		if new_block and (astNode.name=='ASGN' or astNode.name=='RETURN ' or (astNode.name=='FCALL' and astNode.is_statement) or (parent=='IF' or parent=='WHILE')):
 			block_id += 1
 			block_goto.append(None)
 			block_code[block_id] = []
@@ -146,6 +147,14 @@ class CFG_Node:
 		elif astNode.name == "FCALL" and astNode.is_statement:
 			self.address = astNode.value + "(" + ", ".join([str(param) for param in self.children[0].address]) + ")"
 			self.code = self.children[0].code + [self.address]
+			block_code[self.block] += self.code
+
+		elif astNode.name == "RETURN ":
+			if not self.children:
+				self.code = [("return",)]
+			else:
+				self.address = self.children[0].address
+				self.code = self.children[0].code + [("return",self.address)]
 			block_code[self.block] += self.code
 
 		elif astNode.name in operator:
@@ -195,7 +204,7 @@ class CFG_Node:
 	def buildGraph(self, astNode, nextBlock = -1):
 		global block_goto
 		if nextBlock==-1:
-			nextBlock = block_id + 1
+			nextBlock = block_id
 
 		if astNode.name=='IF':
 
@@ -232,13 +241,11 @@ class CFG_Node:
 					self.children[i].buildGraph(astNode.children[i], self.children[i+1].block)
 				else:
 					self.children[i].buildGraph(astNode.children[i], nextBlock)
-
 		else:
-
 			block_goto[self.block] = (nextBlock, nextBlock, False)
 
 
-	def to_str(self, start_block, is_main):
+	def to_str(self, start_block):
 		global block_code, block_goto, block_id
 		cfg_str = ''
 		for block,code in block_code.items():
@@ -248,17 +255,12 @@ class CFG_Node:
 			for line in code:
 				cfg_str += ' '.join([str(word) for word in line])+'\n'
 			t = block_goto[block]
-			if t[2]:
-				cfg_str += 'if(%s) goto <bb %d>\nelse goto <bb %d>\n'%(t[3], t[0], t[1])
-			else:
-				cfg_str += 'goto <bb %d>\n'%(t[0],)
+			if t is not None:
+				if t[2]:
+					cfg_str += 'if(%s) goto <bb %d>\nelse goto <bb %d>\n'%(t[3], t[0], t[1])
+				else:
+					cfg_str += 'goto <bb %d>\n'%(t[0],)
 			cfg_str += '\n'
-		if is_main:
-			cfg_str += '<bb %d>\nEnd\n'%(block_id + 1,)
-		else:
-			cfg_str += '<bb %d>\nreturn\n'%(block_id + 1,)
-		block_id += 1
-		block_goto.append(None)
 		return cfg_str
 	
 class AST_Node:
@@ -364,14 +366,18 @@ def p_function(p):
 			print('Return type does not match with definition: line %d'%(p.lexer.lineno))
 			exit(1)
 		p[0] = AST_Node('FUNCTION', children=[p[1], p[2], p[4], p[8][0], p[8][1]])
+		return_ast = p[8][1]
 		function_name = p[2][0]
 		astfile.write(str(p[0]))
-		start_block = block_id
+		start_block = block_id + 1
 		ast_node = p[8][0]
 		cfg_node = CFG_Node(ast_node, new_block=True, parent = '')
+		cfg_return = CFG_Node(return_ast, new_block = True, parent = '')
 		cfg_node.buildGraph(ast_node)
-		cfgfile.write("\nfunction " + function_name + "()\n")
-		cfgfile.write(cfg_node.to_str(start_block, function_name == "main"))
+
+		function_params = current_ST_node.symbols[function_name].getParams()
+		cfgfile.write("\nfunction " + function_name + "(" + function_params + ")\n")
+		cfgfile.write(cfg_node.to_str(start_block))
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
@@ -605,6 +611,9 @@ def p_expression_add(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_subtract(p):
@@ -612,6 +621,9 @@ def p_expression_subtract(p):
 	p[0] = AST_Node("MINUS", children = [p[1],p[3]])
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = p[3].data_type
 
@@ -625,6 +637,9 @@ def p_expression_multiply(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_divide(p):
@@ -633,12 +648,18 @@ def p_expression_divide(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = p[3].data_type
 
 def p_expression_negation(p):
 	"""expression : MINUS expression %prec UMINUS"""
 	p[0] = AST_Node("UMINUS", children = [p[2]])
 	p[0].data_type = p[2].data_type
+	if p[2].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 
 def p_expression_function_call(p):
 	"""expression : function_call"""
@@ -699,6 +720,9 @@ def p_condition_ee(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_ne(p):
@@ -706,6 +730,9 @@ def p_condition_ne(p):
 	p[0] = AST_Node("NE", children = [p[1],p[3]])
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -715,6 +742,9 @@ def p_condition_lt(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_gt(p):
@@ -722,6 +752,9 @@ def p_condition_gt(p):
 	p[0] = AST_Node("GT", children = [p[1],p[3]])
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -731,6 +764,9 @@ def p_condition_lte(p):
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_gte(p):
@@ -738,6 +774,9 @@ def p_condition_gte(p):
 	p[0] = AST_Node("GE", children = [p[1],p[3]])
 	if p[1].data_type!=p[3].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
@@ -747,6 +786,9 @@ def p_condition_land(p):
 	if p[1].data_type!=p[4].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
 		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
+		exit(1)
 	p[0].data_type = ('bool', 0)
 
 def p_condition_lor(p):
@@ -754,6 +796,9 @@ def p_condition_lor(p):
 	p[0] = AST_Node("OR", children = [p[1], p[4]])
 	if p[1].data_type!=p[4].data_type:
 		print('Type mismatch at %d'%(p.lexer.lineno,))
+		exit(1)
+	if p[1].data_type[1] != 0:
+		print('Pointer operation not allowed %d'%(p.lexer.lineno,))
 		exit(1)
 	p[0].data_type = ('bool', 0)
 
