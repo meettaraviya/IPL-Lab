@@ -14,7 +14,7 @@ file.close()
 astfile = open(sys.argv[1] + ".ast", 'w')
 cfgfile = open(sys.argv[1] + ".cfg", 'w')
 symfile = open(sys.argv[1] + ".sym", 'w')
-spimfile = open(sys.argv[1] + ".s", 'w')
+spimfile = open(sys.argv[1] + "2.s", 'w')
 
 if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
@@ -32,6 +32,20 @@ operator = {
 		"PLUS":"+",
 		"MINUS":"-",
 		"MUL":"*",
+		"DIV":"/",
+		"LT":"<",
+		"GT":">",
+		"LE":"<=",
+		"GE":">=",
+		"EQ":"==",
+		"NE":"!=",
+		"AND":"&&",
+		"OR":"||",
+	}
+op_int_mips = {
+		"PLUS":"add",
+		"MINUS":"sub",
+		"MUL":"mul",
 		"DIV":"/",
 		"LT":"<",
 		"GT":">",
@@ -137,6 +151,18 @@ block_id, t_id = -1, 0
 added_globals = False
 block_code = dict()
 block_goto = [None]
+registers = {
+	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
+	}
+
+def get_register():
+	for reg in sorted(registers.keys()):
+		if (registers[reg]):
+			registers[reg] = False
+			return reg
+
+def free_register(reg):
+	registers[reg] = True
 
 def print_globals():
 	spimfile.write("\n")
@@ -149,7 +175,6 @@ def print_globals():
 			spimfile.write("global_"+name+":\t.word\t0\n")
 		elif variable.type == "float":
 			spimfile.write("global_"+name+":\t.space\t8\n")
-
 	spimfile.write("\n")
 
 def print_prologue(name):
@@ -168,8 +193,13 @@ def print_epilogue(name):
 	spimfile.write("#Epilogue ends\n")
 
 def str_spim_jump(block):
-	spim_str = "\tj label%d"%(block+1,)
+	goto = block_goto[block]
+	if not  goto[2]:
+		spim_str = "\tj label%d\n"%(goto[0],)
+	else:
+		pass
 	return spim_str
+
 
 class CFG_Node:
 
@@ -309,7 +339,7 @@ class CFG_Node:
 			block_goto[self.block] = (nextBlock, nextBlock, False)
 
 
-	def to_spim(self, astNode, prevBlock = -1):
+	def to_spim(self, astNode, function, prevBlock, is_lhs = False):
 		spim_str = ""
 		currentBlock = self.block
 		if prevBlock != currentBlock:
@@ -318,11 +348,59 @@ class CFG_Node:
 			spim_str += "label%d:\n"%(currentBlock,)
 		if astNode.name=="STMLIST" or astNode.name=="IF" or astNode.name=="WHILE":
 			for i in range(len(self.children)):
-				spim_str += self.children[i].to_spim(astNode.children[i], currentBlock)
+				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
 				currentBlock = self.children[i].block
-		
-		return spim_str
+		elif astNode.name == "FCALL":
+			pass
+		elif astNode.name == "ASGN":
+			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
+			reg = get_register()
+			spim_str += "\tmove $%s, $%s\n"%(reg, self.children[1].reg)
+			free_register(self.children[1].reg)
+			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock, is_lhs = True)
+			spim_str += "\tsw $%s, 0($%s)\n"%(reg, self.children[0].reg)
+			free_register(reg)
+			free_register(self.children[0].reg)
 
+		elif astNode.name == "VAR":
+			print (astNode.value)
+			if astNode.value in function.scope.symbols:
+				offset = function.scope.symbols[astNode.value].offset
+				reg = get_register()
+				spim_str += "\tlw $%s, %d($sp)\n"%(reg,offset,)
+			else:
+				reg = get_register()
+				spim_str += "\tlw $%s, global_%s\n"%(reg,astNode.value,)
+			self.reg = reg
+			self.is_expression = False
+		elif astNode.name == "CONST":
+			reg = get_register()
+			spim_str += "\tli $%s, %d\n"%(reg, astNode.value,)
+			self.reg = reg
+			self.is_expression = False
+		elif astNode.name == "DEREF":
+			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
+			if not is_lhs:
+				reg = get_register()
+				spim_str += "\tlw $%s, 0($%s)\n"%(reg, self.children[0].reg)
+				self.reg = reg
+				free_register(self.children[0].reg)
+				self.is_expression = False
+			else:
+				self.reg = self.children[0].reg
+
+		elif astNode.name in op_int_mips:
+			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
+			spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
+			reg = get_register()
+			op = op_int_mips[astNode.name]
+			spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg, self.children[0].reg, self.children[1].reg)
+			self.reg = reg
+			self.is_expression = True
+			free_register(self.children[0].reg)
+			free_register(self.children[1].reg)
+
+		return spim_str
 
 	def to_str(self, start_block):
 		global block_code, block_goto, block_id
@@ -464,6 +542,9 @@ def p_function(p):
 			added_globals = True
 			print_globals()
 		print_prologue(function_name)
+		mips_str = cfg_node.to_spim(ast_node, current_ST_node.symbols[function_name], -1)
+		
+		spimfile.write(mips_str)
 		print_epilogue(function_name)
 
 def p_function_var(p):
