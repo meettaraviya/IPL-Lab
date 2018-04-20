@@ -82,20 +82,21 @@ class Scope:
 
 	def calculate_offsets(self):
 		local_vars = []
-		offset = 4
+		offset = 0
 		print(self.function.name)
 		for name in sorted(self.symbols.keys()):
 			variable = self.symbols[name]
 			print(name, variable.is_param)
 			if not variable.is_param:
-				variable.offset = offset
 				offset += variable.width
+				variable.offset = offset
 		offset += 8 # for fp and ra
+		self.function.offset = offset
 
 		for param in self.function.params:
 			variable = self.symbols[param.name]
-			variable.offset = offset
 			offset += variable.width
+			variable.offset = offset
 
 		print(self.function.name)
 		for name in sorted(self.symbols.keys()):
@@ -150,6 +151,22 @@ def print_globals():
 			spimfile.write("global_"+name+":\t.space\t8\n")
 
 	spimfile.write("\n")
+
+def print_prologue(name):
+	offset = global_symbols.symbols[name].offset
+	spimfile.write("\t.text	# The .text assembler directive indicates\n")
+	spimfile.write("\t.globs "+name+"	# The following is the code\n"+name+":\n#Prologue begins\n")
+	spimfile.write("\tsw $ra, 0($sp)	# Save the return address\n\tsw $fp, -4($sp)	# Save the frame pointer\n\tsub $fp, $sp, 8	# Update the frame pointer\n")
+	spimfile.write("\tsub $sp, $sp, %d	# Make space for the locals\n"%offset)
+	spimfile.write("#Prologue ends\n")
+
+def print_epilogue(name):
+	offset = global_symbols.symbols[name].offset
+	spimfile.write("\t.text	# The .text assembler directive indicates\n")
+	spimfile.write("\t.globs "+name+"	# The following is the code\n"+name+":\n#Epilogue begins\n")
+	spimfile.write("\tadd $sp, $sp, %d\n"%offset)
+	spimfile.write("\tlw $fp, -4($sp)\n\tlw $ra, 0($sp)\n\tjr $ra	# Jump back to the called procedure\n")
+	spimfile.write("#Epilogue ends\n")
 
 class CFG_Node:
 
@@ -424,12 +441,12 @@ def p_function(p):
 		current_ST_node.symbols[function_name].scope.calculate_offsets()
 		cfgfile.write("\nfunction " + function_name + "(" + function_params + ")\n")
 		cfgfile.write(cfg_node.to_str(start_block))
-
 		# SPIM code addition
 		if not added_globals:
 			added_globals = True
 			print_globals()
-
+		print_prologue(function_name)
+		print_epilogue(function_name)
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
