@@ -44,9 +44,10 @@ operator = {
 
 class Scope:
 
-	def __init__(self, parent=None):
+	def __init__(self, parent=None, function=None):
 		self.symbols = dict()
 		self.parent = parent
+		self.function = function
 
 	def __str__(self):
 		string = ""
@@ -76,14 +77,39 @@ class Scope:
 				
 		return string
 
+	def calculate_offsets(self):
+		local_vars = []
+		offset = 4
+		print(self.function.name)
+		for name in sorted(self.symbols.keys()):
+			variable = self.symbols[name]
+			print(name, variable.is_param)
+			if not variable.is_param:
+				variable.offset = offset
+				offset += variable.width
+		offset += 8 # for fp and ra
+
+		for param in self.function.params:
+			variable = self.symbols[param.name]
+			variable.offset = offset
+			offset += variable.width
+
+		print(self.function.name)
+		for name in sorted(self.symbols.keys()):
+			print(name, self.symbols[name].offset)
+
+
+
+
 class Type:
 
-	def __init__(self, name, indirection, type, width, offset):
+	def __init__(self, name, indirection, type, width, offset, is_param=False):
 		self.name = name
 		self.indirection = indirection
 		self.type = type
 		self.width = width
 		self.offset = offset
+		self.is_param = is_param
 
 	def setFunctionProperties(self, scope, params, return_type, is_proto=None):
 		self.scope = scope
@@ -375,6 +401,7 @@ def p_function(p):
 		cfg_node.buildGraph(ast_node)
 
 		function_params = current_ST_node.symbols[function_name].getParams()
+		current_ST_node.symbols[function_name].scope.calculate_offsets()
 		cfgfile.write("\nfunction " + function_name + "(" + function_params + ")\n")
 		cfgfile.write(cfg_node.to_str(start_block))
 
@@ -393,9 +420,9 @@ def p_paramlist(p):
 	if len(p)==2:
 		p[0] = []
 	elif len(p)==3:
-		p[0] = [Type(p[2][0], p[2][1], p[1], None, 0)]
+		p[0] = [Type(p[2][0], p[2][1], p[1], 4, None, is_param=True)]
 	else:
-		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], None, 0)]
+		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], 4, None, is_param=True)]
 
 def p_function_body(p):
 	"""function_body : statement_list return_statement"""	
@@ -407,7 +434,7 @@ def p_return_statement(p):
 		| empty"""
 	if len(p)==4:
 		p[0] = AST_Node('RETURN ', children=[p[2]])
-		p[0].data_type = Type(None, p[2].data_type[1], p[2].data_type[0], None, 0)
+		p[0].data_type = Type(None, p[2].data_type[1], p[2].data_type[0], 4, 0)
 
 		if hasattr(p[2],"is_identifier") and p[2].data_type[1] == 0:
 			print('direct use of non pointer variable %d'%(p.lexer.lineno,))
@@ -415,7 +442,7 @@ def p_return_statement(p):
 
 	else:
 		p[0] = AST_Node('RETURN ', children=[])
-		p[0].data_type = Type(None, 0, 'void', None, 0)
+		p[0].data_type = Type(None, 0, 'void', 4, 0)
 
 def p_function_dummy(p):
 	"""function_dummy : empty"""
@@ -424,7 +451,7 @@ def p_function_dummy(p):
 		print('Declared again: %s'%(p[-4][0],))
 		exit(1)
 	else:
-		return_type = Type(None, p[-4][1], p[-5], None, 0)
+		return_type = Type(None, p[-4][1], p[-5], 4, 0)
 		if p[-4][0] in current_ST_node.symbols:
 			known_params = current_ST_node.symbols[p[-4][0]].params
 			known_return_type = current_ST_node.symbols[p[-4][0]].return_type
@@ -446,10 +473,10 @@ def p_function_dummy(p):
 					print('Parameter %d not matching with prototype: %s'%(i,p[-4][0],))
 					exit(1)
 
-		scope = Scope(parent=current_ST_node)
+		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', 4, 0)
+		scope = Scope(parent=current_ST_node, function=type)
 		for param in p[-2]:
 			scope.symbols[param.name] = param
-		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', None, 0)
 		type.setFunctionProperties(scope, p[-2], return_type, is_proto=False)
 		param_same, param_name, prev_param = False, None, set()
 		for param in p[-2]:
@@ -474,8 +501,8 @@ def p_function_proto_dummy(p):
 		exit(1)
 	else:
 		scope = Scope(parent=current_ST_node)
-		type = Type(p[-4][0], None, 'FUNCTION', None, 0)
-		return_type = Type(None, p[-4][1], p[-5], None, 0)
+		type = Type(p[-4][0], None, 'FUNCTION', 4, 0)
+		return_type = Type(None, p[-4][1], p[-5], 4, 0)
 		type.setFunctionProperties(scope, p[-2], return_type, is_proto=True)
 		current_ST_node.symbols[p[-4][0]] = type
 		current_ST_node = scope
@@ -540,7 +567,7 @@ def p_declaration(p):
 			print('Variable declared again %s'%(var[0],))
 			exit(1)
 		else:
-			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], 0, 0)
+			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], 4, 0)
 	p[0] = AST_Node('DECL')
 
 def p_decl_var_list(p):
