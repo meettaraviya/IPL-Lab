@@ -162,11 +162,14 @@ def print_prologue(name):
 
 def print_epilogue(name):
 	offset = global_symbols.symbols[name].offset
-	spimfile.write("\t.text	# The .text assembler directive indicates\n")
-	spimfile.write("\t.globs "+name+"	# The following is the code\n"+name+":\n#Epilogue begins\n")
+	spimfile.write("\nepilogue_"+name+":\n#Epilogue begins\n")
 	spimfile.write("\tadd $sp, $sp, %d\n"%offset)
 	spimfile.write("\tlw $fp, -4($sp)\n\tlw $ra, 0($sp)\n\tjr $ra	# Jump back to the called procedure\n")
 	spimfile.write("#Epilogue ends\n")
+
+def str_spim_jump(block):
+	spim_str = "\tj label%d"%(block+1,)
+	return spim_str
 
 class CFG_Node:
 
@@ -304,6 +307,21 @@ class CFG_Node:
 					self.children[i].buildGraph(astNode.children[i], nextBlock)
 		else:
 			block_goto[self.block] = (nextBlock, nextBlock, False)
+
+
+	def to_spim(self, astNode, prevBlock = -1):
+		spim_str = ""
+		currentBlock = self.block
+		if prevBlock != currentBlock:
+			if prevBlock != -1:
+				spim_str += str_spim_jump(prevBlock)
+			spim_str += "label%d:\n"%(currentBlock,)
+		if astNode.name=="STMLIST" or astNode.name=="IF" or astNode.name=="WHILE":
+			for i in range(len(self.children)):
+				spim_str += self.children[i].to_spim(astNode.children[i], currentBlock)
+				currentBlock = self.children[i].block
+		
+		return spim_str
 
 
 	def to_str(self, start_block):
