@@ -14,6 +14,7 @@ file.close()
 astfile = open(sys.argv[1] + ".ast", 'w')
 cfgfile = open(sys.argv[1] + ".cfg", 'w')
 symfile = open(sys.argv[1] + ".sym", 'w')
+spimfile = open(sys.argv[1] + ".s", 'w')
 
 if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
@@ -132,8 +133,24 @@ class Type:
 global_symbols = Scope()
 current_ST_node = global_symbols
 block_id, t_id = -1, 0
+added_globals = False
 block_code = dict()
 block_goto = [None]
+
+def print_globals():
+	spimfile.write("\n")
+	spimfile.write("\t.data\n")
+	for name in sorted(global_symbols.symbols.keys()):
+		variable = global_symbols.symbols[name]
+		if variable.type == "int":
+			spimfile.write("global_"+name+":\t.word\t0\n")
+		elif variable.type == "float" and variable.indirection > 0:
+			spimfile.write("global_"+name+":\t.word\t0\n")
+		elif variable.type == "float":
+			spimfile.write("global_"+name+":\t.space\t8\n")
+
+	spimfile.write("\n")
+
 class CFG_Node:
 
 	def __init__(self, astNode, new_block = False, parent=''):
@@ -378,12 +395,13 @@ def p_global_stmt(p):
 	"""global_stmt : declaration
 		| function"""
 
+
 def p_function(p):
 	"""function : VOID function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
 		| DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
 		| DATA_TYPE function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 		| VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON"""
-	global current_ST_node, block_id
+	global current_ST_node, block_id, added_globals
 	current_ST_node = current_ST_node.parent
 	if p[1]=='void' and p[2][1]>0:
 		print('void' + '*'*p[2][1] + ' not allowed in function return type')
@@ -406,6 +424,12 @@ def p_function(p):
 		current_ST_node.symbols[function_name].scope.calculate_offsets()
 		cfgfile.write("\nfunction " + function_name + "(" + function_params + ")\n")
 		cfgfile.write(cfg_node.to_str(start_block))
+
+		# SPIM code addition
+		if not added_globals:
+			added_globals = True
+			print_globals()
+
 
 def p_function_var(p):
 	"""function_var : IDENTIFIER
