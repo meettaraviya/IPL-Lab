@@ -391,7 +391,7 @@ class CFG_Node:
 			if not astNode.is_statement:
 				self.reg = get_register()
 				spim_str += "\tmove $%s, $v1 # using the return value of called function\n"%(self.reg,)
-				
+
 		
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
