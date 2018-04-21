@@ -3,5 +3,5 @@
 *.cfg
 *.sym
 *.pyc
-parser.out
-parsetab.py
+*.out
+*tab.py

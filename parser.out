@@ -1,4 +1,4 @@
-Created by PLY version 3.7 (http://www.dabeaz.com/ply)
+Created by PLY version 3.10 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
@@ -160,23 +160,20 @@ state 0
     (9) function -> . VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 
     $end            reduce using rule 71 (empty -> .)
-    DATA_TYPE       shift and go to state 3
-    VOID            shift and go to state 4
+    DATA_TYPE       shift and go to state 7
+    VOID            shift and go to state 8
 
-    function                       shift and go to state 1
+    program                        shift and go to state 1
     global_stmt_list               shift and go to state 2
-    program                        shift and go to state 5
-    declaration                    shift and go to state 6
-    global_stmt                    shift and go to state 7
-    empty                          shift and go to state 8
+    empty                          shift and go to state 3
+    global_stmt                    shift and go to state 4
+    declaration                    shift and go to state 5
+    function                       shift and go to state 6
 
 state 1
 
-    (5) global_stmt -> function .
+    (0) S' -> program .
 
-    DATA_TYPE       reduce using rule 5 (global_stmt -> function .)
-    VOID            reduce using rule 5 (global_stmt -> function .)
-    $end            reduce using rule 5 (global_stmt -> function .)
 
 
 state 2
@@ -188,51 +185,12 @@ state 2
 
 state 3
 
-    (36) declaration -> DATA_TYPE . decl_var_list SEMICOLON
-    (7) function -> DATA_TYPE . function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
-    (8) function -> DATA_TYPE . function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
-    (37) decl_var_list -> . decl_var
-    (38) decl_var_list -> . decl_var_list COMMA decl_var
-    (10) function_var -> . IDENTIFIER
-    (11) function_var -> . ASTERISK function_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
+    (2) global_stmt_list -> empty .
 
-    IDENTIFIER      shift and go to state 13
-    ASTERISK        shift and go to state 11
+    $end            reduce using rule 2 (global_stmt_list -> empty .)
 
-    function_var                   shift and go to state 9
-    decl_var_list                  shift and go to state 10
-    decl_var                       shift and go to state 12
 
 state 4
-
-    (6) function -> VOID . function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
-    (9) function -> VOID . function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
-    (10) function_var -> . IDENTIFIER
-    (11) function_var -> . ASTERISK function_var
-
-    IDENTIFIER      shift and go to state 16
-    ASTERISK        shift and go to state 15
-
-    function_var                   shift and go to state 14
-
-state 5
-
-    (0) S' -> program .
-
-
-
-state 6
-
-    (4) global_stmt -> declaration .
-
-    DATA_TYPE       reduce using rule 4 (global_stmt -> declaration .)
-    VOID            reduce using rule 4 (global_stmt -> declaration .)
-    $end            reduce using rule 4 (global_stmt -> declaration .)
-
-
-state 7
 
     (3) global_stmt_list -> global_stmt . global_stmt_list
     (2) global_stmt_list -> . empty
@@ -247,28 +205,69 @@ state 7
     (9) function -> . VOID function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 
     $end            reduce using rule 71 (empty -> .)
-    DATA_TYPE       shift and go to state 3
-    VOID            shift and go to state 4
+    DATA_TYPE       shift and go to state 7
+    VOID            shift and go to state 8
 
-    function                       shift and go to state 1
-    global_stmt_list               shift and go to state 17
-    declaration                    shift and go to state 6
-    global_stmt                    shift and go to state 7
-    empty                          shift and go to state 8
+    global_stmt                    shift and go to state 4
+    global_stmt_list               shift and go to state 9
+    empty                          shift and go to state 3
+    declaration                    shift and go to state 5
+    function                       shift and go to state 6
+
+state 5
+
+    (4) global_stmt -> declaration .
+
+    DATA_TYPE       reduce using rule 4 (global_stmt -> declaration .)
+    VOID            reduce using rule 4 (global_stmt -> declaration .)
+    $end            reduce using rule 4 (global_stmt -> declaration .)
+
+
+state 6
+
+    (5) global_stmt -> function .
+
+    DATA_TYPE       reduce using rule 5 (global_stmt -> function .)
+    VOID            reduce using rule 5 (global_stmt -> function .)
+    $end            reduce using rule 5 (global_stmt -> function .)
+
+
+state 7
+
+    (36) declaration -> DATA_TYPE . decl_var_list SEMICOLON
+    (7) function -> DATA_TYPE . function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+    (8) function -> DATA_TYPE . function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
+    (37) decl_var_list -> . decl_var
+    (38) decl_var_list -> . decl_var_list COMMA decl_var
+    (10) function_var -> . IDENTIFIER
+    (11) function_var -> . ASTERISK function_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 13
+    ASTERISK        shift and go to state 14
+
+    decl_var_list                  shift and go to state 10
+    function_var                   shift and go to state 11
+    decl_var                       shift and go to state 12
 
 state 8
 
-    (2) global_stmt_list -> empty .
+    (6) function -> VOID . function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+    (9) function -> VOID . function_var LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
+    (10) function_var -> . IDENTIFIER
+    (11) function_var -> . ASTERISK function_var
 
-    $end            reduce using rule 2 (global_stmt_list -> empty .)
+    IDENTIFIER      shift and go to state 16
+    ASTERISK        shift and go to state 17
 
+    function_var                   shift and go to state 15
 
 state 9
 
-    (7) function -> DATA_TYPE function_var . LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
-    (8) function -> DATA_TYPE function_var . LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
+    (3) global_stmt_list -> global_stmt global_stmt_list .
 
-    LPAREN          shift and go to state 18
+    $end            reduce using rule 3 (global_stmt_list -> global_stmt global_stmt_list .)
 
 
 state 10
@@ -276,24 +275,17 @@ state 10
     (36) declaration -> DATA_TYPE decl_var_list . SEMICOLON
     (38) decl_var_list -> decl_var_list . COMMA decl_var
 
-    SEMICOLON       shift and go to state 20
+    SEMICOLON       shift and go to state 18
     COMMA           shift and go to state 19
 
 
 state 11
 
-    (11) function_var -> ASTERISK . function_var
-    (40) decl_var -> ASTERISK . decl_var
-    (10) function_var -> . IDENTIFIER
-    (11) function_var -> . ASTERISK function_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
+    (7) function -> DATA_TYPE function_var . LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
+    (8) function -> DATA_TYPE function_var . LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 
-    IDENTIFIER      shift and go to state 13
-    ASTERISK        shift and go to state 11
+    LPAREN          shift and go to state 20
 
-    decl_var                       shift and go to state 21
-    function_var                   shift and go to state 22
 
 state 12
 
@@ -315,22 +307,26 @@ state 13
 
 state 14
 
+    (11) function_var -> ASTERISK . function_var
+    (40) decl_var -> ASTERISK . decl_var
+    (10) function_var -> . IDENTIFIER
+    (11) function_var -> . ASTERISK function_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 13
+    ASTERISK        shift and go to state 14
+
+    function_var                   shift and go to state 21
+    decl_var                       shift and go to state 22
+
+state 15
+
     (6) function -> VOID function_var . LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE
     (9) function -> VOID function_var . LPAREN paramlist RPAREN function_proto_dummy SEMICOLON
 
     LPAREN          shift and go to state 23
 
-
-state 15
-
-    (11) function_var -> ASTERISK . function_var
-    (10) function_var -> . IDENTIFIER
-    (11) function_var -> . ASTERISK function_var
-
-    IDENTIFIER      shift and go to state 16
-    ASTERISK        shift and go to state 15
-
-    function_var                   shift and go to state 22
 
 state 16
 
@@ -341,12 +337,43 @@ state 16
 
 state 17
 
-    (3) global_stmt_list -> global_stmt global_stmt_list .
+    (11) function_var -> ASTERISK . function_var
+    (10) function_var -> . IDENTIFIER
+    (11) function_var -> . ASTERISK function_var
 
-    $end            reduce using rule 3 (global_stmt_list -> global_stmt global_stmt_list .)
+    IDENTIFIER      shift and go to state 16
+    ASTERISK        shift and go to state 17
 
+    function_var                   shift and go to state 21
 
 state 18
+
+    (36) declaration -> DATA_TYPE decl_var_list SEMICOLON .
+
+    DATA_TYPE       reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    VOID            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    $end            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    RETURN          reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    IDENTIFIER      reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    ASTERISK        reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    WHILE           reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    IF              reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    RBRACE          reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+    ELSE            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
+
+
+state 19
+
+    (38) decl_var_list -> decl_var_list COMMA . decl_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 25
+    ASTERISK        shift and go to state 26
+
+    decl_var                       shift and go to state 24
+
+state 20
 
     (7) function -> DATA_TYPE function_var LPAREN . paramlist RPAREN function_dummy LBRACE function_body RBRACE
     (8) function -> DATA_TYPE function_var LPAREN . paramlist RPAREN function_proto_dummy SEMICOLON
@@ -355,54 +382,27 @@ state 18
     (14) paramlist -> . empty
     (71) empty -> .
 
-    DATA_TYPE       shift and go to state 26
+    DATA_TYPE       shift and go to state 27
     RPAREN          reduce using rule 71 (empty -> .)
     COMMA           reduce using rule 71 (empty -> .)
 
-    empty                          shift and go to state 25
-    paramlist                      shift and go to state 24
-
-state 19
-
-    (38) decl_var_list -> decl_var_list COMMA . decl_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
-
-    IDENTIFIER      shift and go to state 28
-    ASTERISK        shift and go to state 27
-
-    decl_var                       shift and go to state 29
-
-state 20
-
-    (36) declaration -> DATA_TYPE decl_var_list SEMICOLON .
-
-    RBRACE          reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    DATA_TYPE       reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    IDENTIFIER      reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    ASTERISK        reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    WHILE           reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    IF              reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    RETURN          reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    ELSE            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    VOID            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-    $end            reduce using rule 36 (declaration -> DATA_TYPE decl_var_list SEMICOLON .)
-
+    paramlist                      shift and go to state 28
+    empty                          shift and go to state 29
 
 state 21
-
-    (40) decl_var -> ASTERISK decl_var .
-
-    RPAREN          reduce using rule 40 (decl_var -> ASTERISK decl_var .)
-    COMMA           reduce using rule 40 (decl_var -> ASTERISK decl_var .)
-    SEMICOLON       reduce using rule 40 (decl_var -> ASTERISK decl_var .)
-
-
-state 22
 
     (11) function_var -> ASTERISK function_var .
 
     LPAREN          reduce using rule 11 (function_var -> ASTERISK function_var .)
+
+
+state 22
+
+    (40) decl_var -> ASTERISK decl_var .
+
+    SEMICOLON       reduce using rule 40 (decl_var -> ASTERISK decl_var .)
+    COMMA           reduce using rule 40 (decl_var -> ASTERISK decl_var .)
+    RPAREN          reduce using rule 40 (decl_var -> ASTERISK decl_var .)
 
 
 state 23
@@ -414,68 +414,68 @@ state 23
     (14) paramlist -> . empty
     (71) empty -> .
 
-    DATA_TYPE       shift and go to state 26
+    DATA_TYPE       shift and go to state 27
     RPAREN          reduce using rule 71 (empty -> .)
     COMMA           reduce using rule 71 (empty -> .)
 
-    empty                          shift and go to state 25
     paramlist                      shift and go to state 30
+    empty                          shift and go to state 29
 
 state 24
-
-    (7) function -> DATA_TYPE function_var LPAREN paramlist . RPAREN function_dummy LBRACE function_body RBRACE
-    (8) function -> DATA_TYPE function_var LPAREN paramlist . RPAREN function_proto_dummy SEMICOLON
-    (13) paramlist -> paramlist . COMMA DATA_TYPE decl_var
-
-    RPAREN          shift and go to state 31
-    COMMA           shift and go to state 32
-
-
-state 25
-
-    (14) paramlist -> empty .
-
-    RPAREN          reduce using rule 14 (paramlist -> empty .)
-    COMMA           reduce using rule 14 (paramlist -> empty .)
-
-
-state 26
-
-    (12) paramlist -> DATA_TYPE . decl_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
-
-    IDENTIFIER      shift and go to state 28
-    ASTERISK        shift and go to state 27
-
-    decl_var                       shift and go to state 33
-
-state 27
-
-    (40) decl_var -> ASTERISK . decl_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
-
-    IDENTIFIER      shift and go to state 28
-    ASTERISK        shift and go to state 27
-
-    decl_var                       shift and go to state 21
-
-state 28
-
-    (39) decl_var -> IDENTIFIER .
-
-    RPAREN          reduce using rule 39 (decl_var -> IDENTIFIER .)
-    COMMA           reduce using rule 39 (decl_var -> IDENTIFIER .)
-    SEMICOLON       reduce using rule 39 (decl_var -> IDENTIFIER .)
-
-
-state 29
 
     (38) decl_var_list -> decl_var_list COMMA decl_var .
 
     SEMICOLON       reduce using rule 38 (decl_var_list -> decl_var_list COMMA decl_var .)
     COMMA           reduce using rule 38 (decl_var_list -> decl_var_list COMMA decl_var .)
+
+
+state 25
+
+    (39) decl_var -> IDENTIFIER .
+
+    SEMICOLON       reduce using rule 39 (decl_var -> IDENTIFIER .)
+    COMMA           reduce using rule 39 (decl_var -> IDENTIFIER .)
+    RPAREN          reduce using rule 39 (decl_var -> IDENTIFIER .)
+
+
+state 26
+
+    (40) decl_var -> ASTERISK . decl_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 25
+    ASTERISK        shift and go to state 26
+
+    decl_var                       shift and go to state 22
+
+state 27
+
+    (12) paramlist -> DATA_TYPE . decl_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 25
+    ASTERISK        shift and go to state 26
+
+    decl_var                       shift and go to state 31
+
+state 28
+
+    (7) function -> DATA_TYPE function_var LPAREN paramlist . RPAREN function_dummy LBRACE function_body RBRACE
+    (8) function -> DATA_TYPE function_var LPAREN paramlist . RPAREN function_proto_dummy SEMICOLON
+    (13) paramlist -> paramlist . COMMA DATA_TYPE decl_var
+
+    RPAREN          shift and go to state 32
+    COMMA           shift and go to state 33
+
+
+state 29
+
+    (14) paramlist -> empty .
+
+    RPAREN          reduce using rule 14 (paramlist -> empty .)
+    COMMA           reduce using rule 14 (paramlist -> empty .)
 
 
 state 30
@@ -485,10 +485,18 @@ state 30
     (13) paramlist -> paramlist . COMMA DATA_TYPE decl_var
 
     RPAREN          shift and go to state 34
-    COMMA           shift and go to state 32
+    COMMA           shift and go to state 33
 
 
 state 31
+
+    (12) paramlist -> DATA_TYPE decl_var .
+
+    RPAREN          reduce using rule 12 (paramlist -> DATA_TYPE decl_var .)
+    COMMA           reduce using rule 12 (paramlist -> DATA_TYPE decl_var .)
+
+
+state 32
 
     (7) function -> DATA_TYPE function_var LPAREN paramlist RPAREN . function_dummy LBRACE function_body RBRACE
     (8) function -> DATA_TYPE function_var LPAREN paramlist RPAREN . function_proto_dummy SEMICOLON
@@ -500,22 +508,14 @@ state 31
     SEMICOLON       reduce using rule 71 (empty -> .)
 
     function_dummy                 shift and go to state 35
-    function_proto_dummy           shift and go to state 37
-    empty                          shift and go to state 36
+    function_proto_dummy           shift and go to state 36
+    empty                          shift and go to state 37
 
-state 32
+state 33
 
     (13) paramlist -> paramlist COMMA . DATA_TYPE decl_var
 
     DATA_TYPE       shift and go to state 38
-
-
-state 33
-
-    (12) paramlist -> DATA_TYPE decl_var .
-
-    RPAREN          reduce using rule 12 (paramlist -> DATA_TYPE decl_var .)
-    COMMA           reduce using rule 12 (paramlist -> DATA_TYPE decl_var .)
 
 
 state 34
@@ -531,7 +531,7 @@ state 34
 
     function_dummy                 shift and go to state 39
     function_proto_dummy           shift and go to state 40
-    empty                          shift and go to state 36
+    empty                          shift and go to state 37
 
 state 35
 
@@ -542,18 +542,18 @@ state 35
 
 state 36
 
+    (8) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_proto_dummy . SEMICOLON
+
+    SEMICOLON       shift and go to state 42
+
+
+state 37
+
     (19) function_dummy -> empty .
     (20) function_proto_dummy -> empty .
 
     LBRACE          reduce using rule 19 (function_dummy -> empty .)
     SEMICOLON       reduce using rule 20 (function_proto_dummy -> empty .)
-
-
-state 37
-
-    (8) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_proto_dummy . SEMICOLON
-
-    SEMICOLON       shift and go to state 42
 
 
 state 38
@@ -562,8 +562,8 @@ state 38
     (39) decl_var -> . IDENTIFIER
     (40) decl_var -> . ASTERISK decl_var
 
-    IDENTIFIER      shift and go to state 28
-    ASTERISK        shift and go to state 27
+    IDENTIFIER      shift and go to state 25
+    ASTERISK        shift and go to state 26
 
     decl_var                       shift and go to state 43
 
@@ -597,9 +597,9 @@ state 41
     IF              reduce using rule 71 (empty -> .)
     RBRACE          reduce using rule 71 (empty -> .)
 
+    function_body                  shift and go to state 46
     statement_list                 shift and go to state 47
-    function_body                  shift and go to state 48
-    empty                          shift and go to state 46
+    empty                          shift and go to state 48
 
 state 42
 
@@ -634,9 +634,9 @@ state 44
     IF              reduce using rule 71 (empty -> .)
     RBRACE          reduce using rule 71 (empty -> .)
 
-    statement_list                 shift and go to state 47
     function_body                  shift and go to state 49
-    empty                          shift and go to state 46
+    statement_list                 shift and go to state 47
+    empty                          shift and go to state 48
 
 state 45
 
@@ -649,15 +649,9 @@ state 45
 
 state 46
 
-    (22) statement_list -> empty .
+    (7) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body . RBRACE
 
-    RETURN          reduce using rule 22 (statement_list -> empty .)
-    DATA_TYPE       reduce using rule 22 (statement_list -> empty .)
-    IDENTIFIER      reduce using rule 22 (statement_list -> empty .)
-    ASTERISK        reduce using rule 22 (statement_list -> empty .)
-    WHILE           reduce using rule 22 (statement_list -> empty .)
-    IF              reduce using rule 22 (statement_list -> empty .)
-    RBRACE          reduce using rule 22 (statement_list -> empty .)
+    RBRACE          shift and go to state 50
 
 
 state 47
@@ -686,30 +680,36 @@ state 47
     (42) pointer_var -> . ASTERISK scalar_var
     (31) if_block -> . IF LPAREN condition RPAREN statement_block
 
-    RETURN          shift and go to state 50
+    RETURN          shift and go to state 53
     RBRACE          reduce using rule 71 (empty -> .)
-    DATA_TYPE       shift and go to state 51
-    IDENTIFIER      shift and go to state 56
-    ASTERISK        shift and go to state 59
-    WHILE           shift and go to state 53
-    IF              shift and go to state 61
+    DATA_TYPE       shift and go to state 60
+    IDENTIFIER      shift and go to state 62
+    ASTERISK        shift and go to state 63
+    WHILE           shift and go to state 64
+    IF              shift and go to state 66
 
-    if_else_block                  shift and go to state 62
-    pointer_var                    shift and go to state 63
-    assignment                     shift and go to state 58
-    if_block                       shift and go to state 64
-    function_call                  shift and go to state 52
-    return_statement               shift and go to state 54
-    while_block                    shift and go to state 65
-    statement                      shift and go to state 55
-    declaration                    shift and go to state 60
-    empty                          shift and go to state 57
+    return_statement               shift and go to state 51
+    statement                      shift and go to state 52
+    empty                          shift and go to state 54
+    declaration                    shift and go to state 55
+    assignment                     shift and go to state 56
+    function_call                  shift and go to state 57
+    while_block                    shift and go to state 58
+    if_else_block                  shift and go to state 59
+    pointer_var                    shift and go to state 61
+    if_block                       shift and go to state 65
 
 state 48
 
-    (7) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body . RBRACE
+    (22) statement_list -> empty .
 
-    RBRACE          shift and go to state 66
+    RETURN          reduce using rule 22 (statement_list -> empty .)
+    DATA_TYPE       reduce using rule 22 (statement_list -> empty .)
+    IDENTIFIER      reduce using rule 22 (statement_list -> empty .)
+    ASTERISK        reduce using rule 22 (statement_list -> empty .)
+    WHILE           reduce using rule 22 (statement_list -> empty .)
+    IF              reduce using rule 22 (statement_list -> empty .)
+    RBRACE          reduce using rule 22 (statement_list -> empty .)
 
 
 state 49
@@ -720,6 +720,35 @@ state 49
 
 
 state 50
+
+    (7) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .
+
+    DATA_TYPE       reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
+    VOID            reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
+    $end            reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
+
+
+state 51
+
+    (15) function_body -> statement_list return_statement .
+
+    RBRACE          reduce using rule 15 (function_body -> statement_list return_statement .)
+
+
+state 52
+
+    (21) statement_list -> statement_list statement .
+
+    RETURN          reduce using rule 21 (statement_list -> statement_list statement .)
+    DATA_TYPE       reduce using rule 21 (statement_list -> statement_list statement .)
+    IDENTIFIER      reduce using rule 21 (statement_list -> statement_list statement .)
+    ASTERISK        reduce using rule 21 (statement_list -> statement_list statement .)
+    WHILE           reduce using rule 21 (statement_list -> statement_list statement .)
+    IF              reduce using rule 21 (statement_list -> statement_list statement .)
+    RBRACE          reduce using rule 21 (statement_list -> statement_list statement .)
+
+
+state 53
 
     (16) return_statement -> RETURN . expression SEMICOLON
     (17) return_statement -> RETURN . SEMICOLON
@@ -742,119 +771,26 @@ state 50
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
     SEMICOLON       shift and go to state 69
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 75
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
-
-state 51
-
-    (36) declaration -> DATA_TYPE . decl_var_list SEMICOLON
-    (37) decl_var_list -> . decl_var
-    (38) decl_var_list -> . decl_var_list COMMA decl_var
-    (39) decl_var -> . IDENTIFIER
-    (40) decl_var -> . ASTERISK decl_var
-
-    IDENTIFIER      shift and go to state 28
-    ASTERISK        shift and go to state 27
-
-    decl_var_list                  shift and go to state 10
-    decl_var                       shift and go to state 12
-
-state 52
-
-    (25) statement -> function_call . SEMICOLON
-
-    SEMICOLON       shift and go to state 78
-
-
-state 53
-
-    (35) while_block -> WHILE . LPAREN condition RPAREN statement_block
-
-    LPAREN          shift and go to state 79
-
+    expression                     shift and go to state 68
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 54
-
-    (15) function_body -> statement_list return_statement .
-
-    RBRACE          reduce using rule 15 (function_body -> statement_list return_statement .)
-
-
-state 55
-
-    (21) statement_list -> statement_list statement .
-
-    RETURN          reduce using rule 21 (statement_list -> statement_list statement .)
-    DATA_TYPE       reduce using rule 21 (statement_list -> statement_list statement .)
-    IDENTIFIER      reduce using rule 21 (statement_list -> statement_list statement .)
-    ASTERISK        reduce using rule 21 (statement_list -> statement_list statement .)
-    WHILE           reduce using rule 21 (statement_list -> statement_list statement .)
-    IF              reduce using rule 21 (statement_list -> statement_list statement .)
-    RBRACE          reduce using rule 21 (statement_list -> statement_list statement .)
-
-
-state 56
-
-    (46) assignment -> IDENTIFIER . EQUALS expression SEMICOLON
-    (54) function_call -> IDENTIFIER . LPAREN arglist RPAREN
-    (55) function_call -> IDENTIFIER . LPAREN RPAREN
-
-    EQUALS          shift and go to state 80
-    LPAREN          shift and go to state 81
-
-
-state 57
 
     (18) return_statement -> empty .
 
     RBRACE          reduce using rule 18 (return_statement -> empty .)
 
 
-state 58
-
-    (24) statement -> assignment .
-
-    RETURN          reduce using rule 24 (statement -> assignment .)
-    DATA_TYPE       reduce using rule 24 (statement -> assignment .)
-    IDENTIFIER      reduce using rule 24 (statement -> assignment .)
-    ASTERISK        reduce using rule 24 (statement -> assignment .)
-    WHILE           reduce using rule 24 (statement -> assignment .)
-    IF              reduce using rule 24 (statement -> assignment .)
-    RBRACE          reduce using rule 24 (statement -> assignment .)
-    ELSE            reduce using rule 24 (statement -> assignment .)
-
-
-state 59
-
-    (56) function_call -> ASTERISK . function_call
-    (41) pointer_var -> ASTERISK . pointer_var
-    (42) pointer_var -> ASTERISK . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 83
-    pointer_var                    shift and go to state 82
-    function_call                  shift and go to state 84
-
-state 60
+state 55
 
     (23) statement -> declaration .
 
@@ -868,54 +804,28 @@ state 60
     ELSE            reduce using rule 23 (statement -> declaration .)
 
 
-state 61
+state 56
 
-    (31) if_block -> IF . LPAREN condition RPAREN statement_block
+    (24) statement -> assignment .
 
-    LPAREN          shift and go to state 85
-
-
-state 62
-
-    (27) statement -> if_else_block .
-
-    RETURN          reduce using rule 27 (statement -> if_else_block .)
-    DATA_TYPE       reduce using rule 27 (statement -> if_else_block .)
-    IDENTIFIER      reduce using rule 27 (statement -> if_else_block .)
-    ASTERISK        reduce using rule 27 (statement -> if_else_block .)
-    WHILE           reduce using rule 27 (statement -> if_else_block .)
-    IF              reduce using rule 27 (statement -> if_else_block .)
-    RBRACE          reduce using rule 27 (statement -> if_else_block .)
-    ELSE            reduce using rule 27 (statement -> if_else_block .)
+    RETURN          reduce using rule 24 (statement -> assignment .)
+    DATA_TYPE       reduce using rule 24 (statement -> assignment .)
+    IDENTIFIER      reduce using rule 24 (statement -> assignment .)
+    ASTERISK        reduce using rule 24 (statement -> assignment .)
+    WHILE           reduce using rule 24 (statement -> assignment .)
+    IF              reduce using rule 24 (statement -> assignment .)
+    RBRACE          reduce using rule 24 (statement -> assignment .)
+    ELSE            reduce using rule 24 (statement -> assignment .)
 
 
-state 63
+state 57
 
-    (45) assignment -> pointer_var . EQUALS expression SEMICOLON
+    (25) statement -> function_call . SEMICOLON
 
-    EQUALS          shift and go to state 86
+    SEMICOLON       shift and go to state 78
 
 
-state 64
-
-    (33) if_else_block -> if_block .
-    (34) if_else_block -> if_block . else_block
-    (32) else_block -> . ELSE statement_block
-
-    RBRACE          reduce using rule 33 (if_else_block -> if_block .)
-    DATA_TYPE       reduce using rule 33 (if_else_block -> if_block .)
-    IDENTIFIER      reduce using rule 33 (if_else_block -> if_block .)
-    ASTERISK        reduce using rule 33 (if_else_block -> if_block .)
-    WHILE           reduce using rule 33 (if_else_block -> if_block .)
-    IF              reduce using rule 33 (if_else_block -> if_block .)
-    RETURN          reduce using rule 33 (if_else_block -> if_block .)
-    ELSE            shift and go to state 87
-
-  ! ELSE            [ reduce using rule 33 (if_else_block -> if_block .) ]
-
-    else_block                     shift and go to state 88
-
-state 65
+state 58
 
     (26) statement -> while_block .
 
@@ -929,13 +839,103 @@ state 65
     ELSE            reduce using rule 26 (statement -> while_block .)
 
 
+state 59
+
+    (27) statement -> if_else_block .
+
+    RETURN          reduce using rule 27 (statement -> if_else_block .)
+    DATA_TYPE       reduce using rule 27 (statement -> if_else_block .)
+    IDENTIFIER      reduce using rule 27 (statement -> if_else_block .)
+    ASTERISK        reduce using rule 27 (statement -> if_else_block .)
+    WHILE           reduce using rule 27 (statement -> if_else_block .)
+    IF              reduce using rule 27 (statement -> if_else_block .)
+    RBRACE          reduce using rule 27 (statement -> if_else_block .)
+    ELSE            reduce using rule 27 (statement -> if_else_block .)
+
+
+state 60
+
+    (36) declaration -> DATA_TYPE . decl_var_list SEMICOLON
+    (37) decl_var_list -> . decl_var
+    (38) decl_var_list -> . decl_var_list COMMA decl_var
+    (39) decl_var -> . IDENTIFIER
+    (40) decl_var -> . ASTERISK decl_var
+
+    IDENTIFIER      shift and go to state 25
+    ASTERISK        shift and go to state 26
+
+    decl_var_list                  shift and go to state 10
+    decl_var                       shift and go to state 12
+
+state 61
+
+    (45) assignment -> pointer_var . EQUALS expression SEMICOLON
+
+    EQUALS          shift and go to state 79
+
+
+state 62
+
+    (46) assignment -> IDENTIFIER . EQUALS expression SEMICOLON
+    (54) function_call -> IDENTIFIER . LPAREN arglist RPAREN
+    (55) function_call -> IDENTIFIER . LPAREN RPAREN
+
+    EQUALS          shift and go to state 80
+    LPAREN          shift and go to state 81
+
+
+state 63
+
+    (56) function_call -> ASTERISK . function_call
+    (41) pointer_var -> ASTERISK . pointer_var
+    (42) pointer_var -> ASTERISK . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    function_call                  shift and go to state 82
+    pointer_var                    shift and go to state 83
+    scalar_var                     shift and go to state 84
+
+state 64
+
+    (35) while_block -> WHILE . LPAREN condition RPAREN statement_block
+
+    LPAREN          shift and go to state 85
+
+
+state 65
+
+    (33) if_else_block -> if_block .
+    (34) if_else_block -> if_block . else_block
+    (32) else_block -> . ELSE statement_block
+
+    RETURN          reduce using rule 33 (if_else_block -> if_block .)
+    DATA_TYPE       reduce using rule 33 (if_else_block -> if_block .)
+    IDENTIFIER      reduce using rule 33 (if_else_block -> if_block .)
+    ASTERISK        reduce using rule 33 (if_else_block -> if_block .)
+    WHILE           reduce using rule 33 (if_else_block -> if_block .)
+    IF              reduce using rule 33 (if_else_block -> if_block .)
+    RBRACE          reduce using rule 33 (if_else_block -> if_block .)
+    ELSE            shift and go to state 87
+
+  ! ELSE            [ reduce using rule 33 (if_else_block -> if_block .) ]
+
+    else_block                     shift and go to state 86
+
 state 66
 
-    (7) function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .
+    (31) if_block -> IF . LPAREN condition RPAREN statement_block
 
-    DATA_TYPE       reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
-    VOID            reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
-    $end            reduce using rule 7 (function -> DATA_TYPE function_var LPAREN paramlist RPAREN function_dummy LBRACE function_body RBRACE .)
+    LPAREN          shift and go to state 88
 
 
 state 67
@@ -949,23 +949,17 @@ state 67
 
 state 68
 
-    (69) expression -> pointer_var .
+    (16) return_statement -> RETURN expression . SEMICOLON
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
 
-    EE              reduce using rule 69 (expression -> pointer_var .)
-    NE              reduce using rule 69 (expression -> pointer_var .)
-    LT              reduce using rule 69 (expression -> pointer_var .)
-    GT              reduce using rule 69 (expression -> pointer_var .)
-    LTE             reduce using rule 69 (expression -> pointer_var .)
-    GTE             reduce using rule 69 (expression -> pointer_var .)
-    PLUS            reduce using rule 69 (expression -> pointer_var .)
-    MINUS           reduce using rule 69 (expression -> pointer_var .)
-    ASTERISK        reduce using rule 69 (expression -> pointer_var .)
-    FSLASH          reduce using rule 69 (expression -> pointer_var .)
-    SEMICOLON       reduce using rule 69 (expression -> pointer_var .)
-    RPAREN          reduce using rule 69 (expression -> pointer_var .)
-    COMMA           reduce using rule 69 (expression -> pointer_var .)
-    AMPERSAND       reduce using rule 69 (expression -> pointer_var .)
-    PIPE            reduce using rule 69 (expression -> pointer_var .)
+    SEMICOLON       shift and go to state 89
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
 
 
 state 69
@@ -976,142 +970,6 @@ state 69
 
 
 state 70
-
-    (70) expression -> scalar_var .
-
-    EE              reduce using rule 70 (expression -> scalar_var .)
-    NE              reduce using rule 70 (expression -> scalar_var .)
-    LT              reduce using rule 70 (expression -> scalar_var .)
-    GT              reduce using rule 70 (expression -> scalar_var .)
-    LTE             reduce using rule 70 (expression -> scalar_var .)
-    GTE             reduce using rule 70 (expression -> scalar_var .)
-    PLUS            reduce using rule 70 (expression -> scalar_var .)
-    MINUS           reduce using rule 70 (expression -> scalar_var .)
-    ASTERISK        reduce using rule 70 (expression -> scalar_var .)
-    FSLASH          reduce using rule 70 (expression -> scalar_var .)
-    SEMICOLON       reduce using rule 70 (expression -> scalar_var .)
-    RPAREN          reduce using rule 70 (expression -> scalar_var .)
-    COMMA           reduce using rule 70 (expression -> scalar_var .)
-    AMPERSAND       reduce using rule 70 (expression -> scalar_var .)
-    PIPE            reduce using rule 70 (expression -> scalar_var .)
-
-
-state 71
-
-    (53) expression -> function_call .
-
-    EE              reduce using rule 53 (expression -> function_call .)
-    NE              reduce using rule 53 (expression -> function_call .)
-    LT              reduce using rule 53 (expression -> function_call .)
-    GT              reduce using rule 53 (expression -> function_call .)
-    LTE             reduce using rule 53 (expression -> function_call .)
-    GTE             reduce using rule 53 (expression -> function_call .)
-    PLUS            reduce using rule 53 (expression -> function_call .)
-    MINUS           reduce using rule 53 (expression -> function_call .)
-    ASTERISK        reduce using rule 53 (expression -> function_call .)
-    FSLASH          reduce using rule 53 (expression -> function_call .)
-    SEMICOLON       reduce using rule 53 (expression -> function_call .)
-    RPAREN          reduce using rule 53 (expression -> function_call .)
-    COMMA           reduce using rule 53 (expression -> function_call .)
-    AMPERSAND       reduce using rule 53 (expression -> function_call .)
-    PIPE            reduce using rule 53 (expression -> function_call .)
-
-
-state 72
-
-    (68) expression -> CONSTANT .
-
-    EE              reduce using rule 68 (expression -> CONSTANT .)
-    NE              reduce using rule 68 (expression -> CONSTANT .)
-    LT              reduce using rule 68 (expression -> CONSTANT .)
-    GT              reduce using rule 68 (expression -> CONSTANT .)
-    LTE             reduce using rule 68 (expression -> CONSTANT .)
-    GTE             reduce using rule 68 (expression -> CONSTANT .)
-    PLUS            reduce using rule 68 (expression -> CONSTANT .)
-    MINUS           reduce using rule 68 (expression -> CONSTANT .)
-    ASTERISK        reduce using rule 68 (expression -> CONSTANT .)
-    FSLASH          reduce using rule 68 (expression -> CONSTANT .)
-    SEMICOLON       reduce using rule 68 (expression -> CONSTANT .)
-    RPAREN          reduce using rule 68 (expression -> CONSTANT .)
-    COMMA           reduce using rule 68 (expression -> CONSTANT .)
-    AMPERSAND       reduce using rule 68 (expression -> CONSTANT .)
-    PIPE            reduce using rule 68 (expression -> CONSTANT .)
-
-
-state 73
-
-    (49) expression -> LPAREN . expression RPAREN
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 89
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
-
-state 74
-
-    (54) function_call -> IDENTIFIER . LPAREN arglist RPAREN
-    (55) function_call -> IDENTIFIER . LPAREN RPAREN
-    (43) scalar_var -> IDENTIFIER .
-
-    LPAREN          shift and go to state 81
-    PLUS            reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    MINUS           reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    ASTERISK        reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    FSLASH          reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    RPAREN          reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    COMMA           reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    AMPERSAND       reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    PIPE            reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    SEMICOLON       reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    EE              reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    NE              reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    LT              reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    GT              reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    LTE             reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    GTE             reduce using rule 43 (scalar_var -> IDENTIFIER .)
-    EQUALS          reduce using rule 43 (scalar_var -> IDENTIFIER .)
-
-
-state 75
-
-    (16) return_statement -> RETURN expression . SEMICOLON
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    SEMICOLON       shift and go to state 90
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 76
 
     (52) expression -> MINUS . expression
     (47) expression -> . expression PLUS expression
@@ -1132,17 +990,159 @@ state 76
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
+    expression                     shift and go to state 94
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 71
+
+    (49) expression -> LPAREN . expression RPAREN
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
     expression                     shift and go to state 95
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 72
+
+    (53) expression -> function_call .
+
+    SEMICOLON       reduce using rule 53 (expression -> function_call .)
+    PLUS            reduce using rule 53 (expression -> function_call .)
+    MINUS           reduce using rule 53 (expression -> function_call .)
+    ASTERISK        reduce using rule 53 (expression -> function_call .)
+    FSLASH          reduce using rule 53 (expression -> function_call .)
+    RPAREN          reduce using rule 53 (expression -> function_call .)
+    COMMA           reduce using rule 53 (expression -> function_call .)
+    EE              reduce using rule 53 (expression -> function_call .)
+    NE              reduce using rule 53 (expression -> function_call .)
+    LT              reduce using rule 53 (expression -> function_call .)
+    GT              reduce using rule 53 (expression -> function_call .)
+    LTE             reduce using rule 53 (expression -> function_call .)
+    GTE             reduce using rule 53 (expression -> function_call .)
+    AMPERSAND       reduce using rule 53 (expression -> function_call .)
+    PIPE            reduce using rule 53 (expression -> function_call .)
+
+
+state 73
+
+    (68) expression -> CONSTANT .
+
+    SEMICOLON       reduce using rule 68 (expression -> CONSTANT .)
+    PLUS            reduce using rule 68 (expression -> CONSTANT .)
+    MINUS           reduce using rule 68 (expression -> CONSTANT .)
+    ASTERISK        reduce using rule 68 (expression -> CONSTANT .)
+    FSLASH          reduce using rule 68 (expression -> CONSTANT .)
+    RPAREN          reduce using rule 68 (expression -> CONSTANT .)
+    COMMA           reduce using rule 68 (expression -> CONSTANT .)
+    EE              reduce using rule 68 (expression -> CONSTANT .)
+    NE              reduce using rule 68 (expression -> CONSTANT .)
+    LT              reduce using rule 68 (expression -> CONSTANT .)
+    GT              reduce using rule 68 (expression -> CONSTANT .)
+    LTE             reduce using rule 68 (expression -> CONSTANT .)
+    GTE             reduce using rule 68 (expression -> CONSTANT .)
+    AMPERSAND       reduce using rule 68 (expression -> CONSTANT .)
+    PIPE            reduce using rule 68 (expression -> CONSTANT .)
+
+
+state 74
+
+    (69) expression -> pointer_var .
+
+    SEMICOLON       reduce using rule 69 (expression -> pointer_var .)
+    PLUS            reduce using rule 69 (expression -> pointer_var .)
+    MINUS           reduce using rule 69 (expression -> pointer_var .)
+    ASTERISK        reduce using rule 69 (expression -> pointer_var .)
+    FSLASH          reduce using rule 69 (expression -> pointer_var .)
+    RPAREN          reduce using rule 69 (expression -> pointer_var .)
+    COMMA           reduce using rule 69 (expression -> pointer_var .)
+    EE              reduce using rule 69 (expression -> pointer_var .)
+    NE              reduce using rule 69 (expression -> pointer_var .)
+    LT              reduce using rule 69 (expression -> pointer_var .)
+    GT              reduce using rule 69 (expression -> pointer_var .)
+    LTE             reduce using rule 69 (expression -> pointer_var .)
+    GTE             reduce using rule 69 (expression -> pointer_var .)
+    AMPERSAND       reduce using rule 69 (expression -> pointer_var .)
+    PIPE            reduce using rule 69 (expression -> pointer_var .)
+
+
+state 75
+
+    (70) expression -> scalar_var .
+
+    SEMICOLON       reduce using rule 70 (expression -> scalar_var .)
+    PLUS            reduce using rule 70 (expression -> scalar_var .)
+    MINUS           reduce using rule 70 (expression -> scalar_var .)
+    ASTERISK        reduce using rule 70 (expression -> scalar_var .)
+    FSLASH          reduce using rule 70 (expression -> scalar_var .)
+    RPAREN          reduce using rule 70 (expression -> scalar_var .)
+    COMMA           reduce using rule 70 (expression -> scalar_var .)
+    EE              reduce using rule 70 (expression -> scalar_var .)
+    NE              reduce using rule 70 (expression -> scalar_var .)
+    LT              reduce using rule 70 (expression -> scalar_var .)
+    GT              reduce using rule 70 (expression -> scalar_var .)
+    LTE             reduce using rule 70 (expression -> scalar_var .)
+    GTE             reduce using rule 70 (expression -> scalar_var .)
+    AMPERSAND       reduce using rule 70 (expression -> scalar_var .)
+    PIPE            reduce using rule 70 (expression -> scalar_var .)
+
+
+state 76
+
+    (54) function_call -> IDENTIFIER . LPAREN arglist RPAREN
+    (55) function_call -> IDENTIFIER . LPAREN RPAREN
+    (43) scalar_var -> IDENTIFIER .
+
+    LPAREN          shift and go to state 81
+    SEMICOLON       reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    PLUS            reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    MINUS           reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    ASTERISK        reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    FSLASH          reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    EQUALS          reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    RPAREN          reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    COMMA           reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    EE              reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    NE              reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    LT              reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    GT              reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    LTE             reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    GTE             reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    AMPERSAND       reduce using rule 43 (scalar_var -> IDENTIFIER .)
+    PIPE            reduce using rule 43 (scalar_var -> IDENTIFIER .)
+
 
 state 77
 
@@ -1166,6 +1166,175 @@ state 78
 
 
 state 79
+
+    (45) assignment -> pointer_var EQUALS . expression SEMICOLON
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    pointer_var                    shift and go to state 74
+    expression                     shift and go to state 97
+    function_call                  shift and go to state 72
+    scalar_var                     shift and go to state 75
+
+state 80
+
+    (46) assignment -> IDENTIFIER EQUALS . expression SEMICOLON
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    expression                     shift and go to state 98
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 81
+
+    (54) function_call -> IDENTIFIER LPAREN . arglist RPAREN
+    (55) function_call -> IDENTIFIER LPAREN . RPAREN
+    (57) arglist -> . arglist COMMA expression
+    (58) arglist -> . expression
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    RPAREN          shift and go to state 100
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    arglist                        shift and go to state 99
+    expression                     shift and go to state 101
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 82
+
+    (56) function_call -> ASTERISK function_call .
+
+    SEMICOLON       reduce using rule 56 (function_call -> ASTERISK function_call .)
+    PLUS            reduce using rule 56 (function_call -> ASTERISK function_call .)
+    MINUS           reduce using rule 56 (function_call -> ASTERISK function_call .)
+    ASTERISK        reduce using rule 56 (function_call -> ASTERISK function_call .)
+    FSLASH          reduce using rule 56 (function_call -> ASTERISK function_call .)
+    RPAREN          reduce using rule 56 (function_call -> ASTERISK function_call .)
+    COMMA           reduce using rule 56 (function_call -> ASTERISK function_call .)
+    EE              reduce using rule 56 (function_call -> ASTERISK function_call .)
+    NE              reduce using rule 56 (function_call -> ASTERISK function_call .)
+    LT              reduce using rule 56 (function_call -> ASTERISK function_call .)
+    GT              reduce using rule 56 (function_call -> ASTERISK function_call .)
+    LTE             reduce using rule 56 (function_call -> ASTERISK function_call .)
+    GTE             reduce using rule 56 (function_call -> ASTERISK function_call .)
+    AMPERSAND       reduce using rule 56 (function_call -> ASTERISK function_call .)
+    PIPE            reduce using rule 56 (function_call -> ASTERISK function_call .)
+
+
+state 83
+
+    (41) pointer_var -> ASTERISK pointer_var .
+
+    EQUALS          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    SEMICOLON       reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    PLUS            reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    MINUS           reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    ASTERISK        reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    FSLASH          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    RPAREN          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    COMMA           reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    EE              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    NE              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    LT              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    GT              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    LTE             reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    GTE             reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    AMPERSAND       reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+    PIPE            reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
+
+
+state 84
+
+    (42) pointer_var -> ASTERISK scalar_var .
+
+    EQUALS          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    SEMICOLON       reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    PLUS            reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    MINUS           reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    ASTERISK        reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    FSLASH          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    RPAREN          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    COMMA           reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    EE              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    NE              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    LT              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    GT              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    LTE             reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    GTE             reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    AMPERSAND       reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+    PIPE            reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
+
+
+state 85
 
     (35) while_block -> WHILE LPAREN . condition RPAREN statement_block
     (59) condition -> . expression EE expression
@@ -1195,156 +1364,76 @@ state 79
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 97
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 102
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    pointer_var                    shift and go to state 68
-    scalar_var                     shift and go to state 70
-    function_call                  shift and go to state 71
-    expression                     shift and go to state 99
-    condition                      shift and go to state 98
+    condition                      shift and go to state 103
+    expression                     shift and go to state 104
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 80
+state 86
 
-    (46) assignment -> IDENTIFIER EQUALS . expression SEMICOLON
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
+    (34) if_else_block -> if_block else_block .
+
+    RETURN          reduce using rule 34 (if_else_block -> if_block else_block .)
+    DATA_TYPE       reduce using rule 34 (if_else_block -> if_block else_block .)
+    IDENTIFIER      reduce using rule 34 (if_else_block -> if_block else_block .)
+    ASTERISK        reduce using rule 34 (if_else_block -> if_block else_block .)
+    WHILE           reduce using rule 34 (if_else_block -> if_block else_block .)
+    IF              reduce using rule 34 (if_else_block -> if_block else_block .)
+    RBRACE          reduce using rule 34 (if_else_block -> if_block else_block .)
+    ELSE            reduce using rule 34 (if_else_block -> if_block else_block .)
+
+
+state 87
+
+    (32) else_block -> ELSE . statement_block
+    (28) statement_block -> . statement
+    (29) statement_block -> . SEMICOLON
+    (30) statement_block -> . LBRACE statement_list RBRACE
+    (23) statement -> . declaration
+    (24) statement -> . assignment
+    (25) statement -> . function_call SEMICOLON
+    (26) statement -> . while_block
+    (27) statement -> . if_else_block
+    (36) declaration -> . DATA_TYPE decl_var_list SEMICOLON
+    (45) assignment -> . pointer_var EQUALS expression SEMICOLON
+    (46) assignment -> . IDENTIFIER EQUALS expression SEMICOLON
     (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
     (55) function_call -> . IDENTIFIER LPAREN RPAREN
     (56) function_call -> . ASTERISK function_call
+    (35) while_block -> . WHILE LPAREN condition RPAREN statement_block
+    (33) if_else_block -> . if_block
+    (34) if_else_block -> . if_block else_block
     (41) pointer_var -> . ASTERISK pointer_var
     (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
+    (31) if_block -> . IF LPAREN condition RPAREN statement_block
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
+    SEMICOLON       shift and go to state 107
+    LBRACE          shift and go to state 108
+    DATA_TYPE       shift and go to state 60
+    IDENTIFIER      shift and go to state 62
+    ASTERISK        shift and go to state 63
+    WHILE           shift and go to state 64
+    IF              shift and go to state 66
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 100
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    statement_block                shift and go to state 105
+    statement                      shift and go to state 106
+    declaration                    shift and go to state 55
+    assignment                     shift and go to state 56
+    function_call                  shift and go to state 57
+    while_block                    shift and go to state 58
+    if_else_block                  shift and go to state 59
+    pointer_var                    shift and go to state 61
+    if_block                       shift and go to state 65
 
-state 81
-
-    (54) function_call -> IDENTIFIER LPAREN . arglist RPAREN
-    (55) function_call -> IDENTIFIER LPAREN . RPAREN
-    (57) arglist -> . arglist COMMA expression
-    (58) arglist -> . expression
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    RPAREN          shift and go to state 102
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 70
-    arglist                        shift and go to state 101
-    expression                     shift and go to state 103
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
-
-state 82
-
-    (41) pointer_var -> ASTERISK pointer_var .
-
-    PLUS            reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    MINUS           reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    ASTERISK        reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    FSLASH          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    RPAREN          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    AMPERSAND       reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    PIPE            reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    EQUALS          reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    SEMICOLON       reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    EE              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    NE              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    LT              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    GT              reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    LTE             reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    GTE             reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-    COMMA           reduce using rule 41 (pointer_var -> ASTERISK pointer_var .)
-
-
-state 83
-
-    (42) pointer_var -> ASTERISK scalar_var .
-
-    PLUS            reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    MINUS           reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    ASTERISK        reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    FSLASH          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    RPAREN          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    AMPERSAND       reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    PIPE            reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    EQUALS          reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    SEMICOLON       reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    EE              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    NE              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    LT              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    GT              reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    LTE             reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    GTE             reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-    COMMA           reduce using rule 42 (pointer_var -> ASTERISK scalar_var .)
-
-
-state 84
-
-    (56) function_call -> ASTERISK function_call .
-
-    RPAREN          reduce using rule 56 (function_call -> ASTERISK function_call .)
-    PLUS            reduce using rule 56 (function_call -> ASTERISK function_call .)
-    MINUS           reduce using rule 56 (function_call -> ASTERISK function_call .)
-    ASTERISK        reduce using rule 56 (function_call -> ASTERISK function_call .)
-    FSLASH          reduce using rule 56 (function_call -> ASTERISK function_call .)
-    SEMICOLON       reduce using rule 56 (function_call -> ASTERISK function_call .)
-    EE              reduce using rule 56 (function_call -> ASTERISK function_call .)
-    NE              reduce using rule 56 (function_call -> ASTERISK function_call .)
-    LT              reduce using rule 56 (function_call -> ASTERISK function_call .)
-    GT              reduce using rule 56 (function_call -> ASTERISK function_call .)
-    LTE             reduce using rule 56 (function_call -> ASTERISK function_call .)
-    GTE             reduce using rule 56 (function_call -> ASTERISK function_call .)
-    COMMA           reduce using rule 56 (function_call -> ASTERISK function_call .)
-    AMPERSAND       reduce using rule 56 (function_call -> ASTERISK function_call .)
-    PIPE            reduce using rule 56 (function_call -> ASTERISK function_call .)
-
-
-state 85
+state 88
 
     (31) if_block -> IF LPAREN . condition RPAREN statement_block
     (59) condition -> . expression EE expression
@@ -1374,133 +1463,29 @@ state 85
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 97
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 102
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    pointer_var                    shift and go to state 68
-    scalar_var                     shift and go to state 70
-    function_call                  shift and go to state 71
-    expression                     shift and go to state 99
-    condition                      shift and go to state 104
-
-state 86
-
-    (45) assignment -> pointer_var EQUALS . expression SEMICOLON
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 105
-    function_call                  shift and go to state 71
-    pointer_var                    shift and go to state 68
-
-state 87
-
-    (32) else_block -> ELSE . statement_block
-    (28) statement_block -> . statement
-    (29) statement_block -> . SEMICOLON
-    (30) statement_block -> . LBRACE statement_list RBRACE
-    (23) statement -> . declaration
-    (24) statement -> . assignment
-    (25) statement -> . function_call SEMICOLON
-    (26) statement -> . while_block
-    (27) statement -> . if_else_block
-    (36) declaration -> . DATA_TYPE decl_var_list SEMICOLON
-    (45) assignment -> . pointer_var EQUALS expression SEMICOLON
-    (46) assignment -> . IDENTIFIER EQUALS expression SEMICOLON
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (35) while_block -> . WHILE LPAREN condition RPAREN statement_block
-    (33) if_else_block -> . if_block
-    (34) if_else_block -> . if_block else_block
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (31) if_block -> . IF LPAREN condition RPAREN statement_block
-
-    SEMICOLON       shift and go to state 107
-    LBRACE          shift and go to state 109
-    DATA_TYPE       shift and go to state 51
-    IDENTIFIER      shift and go to state 56
-    ASTERISK        shift and go to state 59
-    WHILE           shift and go to state 53
-    IF              shift and go to state 61
-
-    if_else_block                  shift and go to state 62
-    pointer_var                    shift and go to state 63
-    assignment                     shift and go to state 58
-    if_block                       shift and go to state 64
-    function_call                  shift and go to state 52
-    while_block                    shift and go to state 65
-    statement_block                shift and go to state 106
-    statement                      shift and go to state 108
-    declaration                    shift and go to state 60
-
-state 88
-
-    (34) if_else_block -> if_block else_block .
-
-    RBRACE          reduce using rule 34 (if_else_block -> if_block else_block .)
-    DATA_TYPE       reduce using rule 34 (if_else_block -> if_block else_block .)
-    IDENTIFIER      reduce using rule 34 (if_else_block -> if_block else_block .)
-    ASTERISK        reduce using rule 34 (if_else_block -> if_block else_block .)
-    WHILE           reduce using rule 34 (if_else_block -> if_block else_block .)
-    IF              reduce using rule 34 (if_else_block -> if_block else_block .)
-    RETURN          reduce using rule 34 (if_else_block -> if_block else_block .)
-    ELSE            reduce using rule 34 (if_else_block -> if_block else_block .)
-
+    condition                      shift and go to state 109
+    expression                     shift and go to state 104
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 89
-
-    (49) expression -> LPAREN expression . RPAREN
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    RPAREN          shift and go to state 110
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 90
 
     (16) return_statement -> RETURN expression SEMICOLON .
 
     RBRACE          reduce using rule 16 (return_statement -> RETURN expression SEMICOLON .)
 
 
-state 91
+state 90
 
-    (51) expression -> expression FSLASH . expression
+    (47) expression -> expression PLUS . expression
     (47) expression -> . expression PLUS expression
     (48) expression -> . expression MINUS expression
     (49) expression -> . LPAREN expression RPAREN
@@ -1519,17 +1504,50 @@ state 91
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
+    expression                     shift and go to state 110
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 91
+
+    (48) expression -> expression MINUS . expression
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
     expression                     shift and go to state 111
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 92
 
@@ -1552,21 +1570,21 @@ state 92
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
     expression                     shift and go to state 112
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 93
 
-    (47) expression -> expression PLUS . expression
+    (51) expression -> expression FSLASH . expression
     (47) expression -> . expression PLUS expression
     (48) expression -> . expression MINUS expression
     (49) expression -> . LPAREN expression RPAREN
@@ -1585,52 +1603,19 @@ state 93
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
     expression                     shift and go to state 113
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 94
-
-    (48) expression -> expression MINUS . expression
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 114
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
-
-state 95
 
     (52) expression -> MINUS expression .
     (47) expression -> expression . PLUS expression
@@ -1638,51 +1623,142 @@ state 95
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    SEMICOLON       reduce using rule 52 (expression -> MINUS expression .)
+    PLUS            reduce using rule 52 (expression -> MINUS expression .)
+    MINUS           reduce using rule 52 (expression -> MINUS expression .)
+    ASTERISK        reduce using rule 52 (expression -> MINUS expression .)
+    FSLASH          reduce using rule 52 (expression -> MINUS expression .)
+    RPAREN          reduce using rule 52 (expression -> MINUS expression .)
+    COMMA           reduce using rule 52 (expression -> MINUS expression .)
     EE              reduce using rule 52 (expression -> MINUS expression .)
     NE              reduce using rule 52 (expression -> MINUS expression .)
     LT              reduce using rule 52 (expression -> MINUS expression .)
     GT              reduce using rule 52 (expression -> MINUS expression .)
     LTE             reduce using rule 52 (expression -> MINUS expression .)
     GTE             reduce using rule 52 (expression -> MINUS expression .)
-    PLUS            reduce using rule 52 (expression -> MINUS expression .)
-    MINUS           reduce using rule 52 (expression -> MINUS expression .)
-    ASTERISK        reduce using rule 52 (expression -> MINUS expression .)
-    FSLASH          reduce using rule 52 (expression -> MINUS expression .)
-    SEMICOLON       reduce using rule 52 (expression -> MINUS expression .)
-    RPAREN          reduce using rule 52 (expression -> MINUS expression .)
-    COMMA           reduce using rule 52 (expression -> MINUS expression .)
     AMPERSAND       reduce using rule 52 (expression -> MINUS expression .)
     PIPE            reduce using rule 52 (expression -> MINUS expression .)
 
-  ! PLUS            [ shift and go to state 93 ]
-  ! MINUS           [ shift and go to state 94 ]
+  ! PLUS            [ shift and go to state 90 ]
+  ! MINUS           [ shift and go to state 91 ]
   ! ASTERISK        [ shift and go to state 92 ]
-  ! FSLASH          [ shift and go to state 91 ]
+  ! FSLASH          [ shift and go to state 93 ]
+
+
+state 95
+
+    (49) expression -> LPAREN expression . RPAREN
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    RPAREN          shift and go to state 114
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
 
 
 state 96
 
     (44) scalar_var -> AMPERSAND IDENTIFIER .
 
+    SEMICOLON       reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     PLUS            reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     MINUS           reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     ASTERISK        reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     FSLASH          reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
+    EQUALS          reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     RPAREN          reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     COMMA           reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
-    AMPERSAND       reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
-    PIPE            reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
-    SEMICOLON       reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     EE              reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     NE              reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     LT              reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     GT              reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     LTE             reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
     GTE             reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
-    EQUALS          reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
+    AMPERSAND       reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
+    PIPE            reduce using rule 44 (scalar_var -> AMPERSAND IDENTIFIER .)
 
 
 state 97
+
+    (45) assignment -> pointer_var EQUALS expression . SEMICOLON
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    SEMICOLON       shift and go to state 115
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
+
+
+state 98
+
+    (46) assignment -> IDENTIFIER EQUALS expression . SEMICOLON
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    SEMICOLON       shift and go to state 116
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
+
+
+state 99
+
+    (54) function_call -> IDENTIFIER LPAREN arglist . RPAREN
+    (57) arglist -> arglist . COMMA expression
+
+    RPAREN          shift and go to state 117
+    COMMA           shift and go to state 118
+
+
+state 100
+
+    (55) function_call -> IDENTIFIER LPAREN RPAREN .
+
+    SEMICOLON       reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    PLUS            reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    MINUS           reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    ASTERISK        reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    FSLASH          reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    RPAREN          reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    COMMA           reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    EE              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    NE              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    LT              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    GT              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    LTE             reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    GTE             reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    AMPERSAND       reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+    PIPE            reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
+
+
+state 101
+
+    (58) arglist -> expression .
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    RPAREN          reduce using rule 58 (arglist -> expression .)
+    COMMA           reduce using rule 58 (arglist -> expression .)
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
+
+
+state 102
 
     (67) condition -> LPAREN . condition RPAREN
     (49) expression -> LPAREN . expression RPAREN
@@ -1713,31 +1789,31 @@ state 97
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 97
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 102
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    pointer_var                    shift and go to state 68
-    scalar_var                     shift and go to state 70
-    function_call                  shift and go to state 71
-    expression                     shift and go to state 116
-    condition                      shift and go to state 115
+    condition                      shift and go to state 119
+    expression                     shift and go to state 120
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 98
+state 103
 
     (35) while_block -> WHILE LPAREN condition . RPAREN statement_block
     (65) condition -> condition . AMPERSAND AMPERSAND condition
     (66) condition -> condition . PIPE PIPE condition
 
-    RPAREN          shift and go to state 117
-    AMPERSAND       shift and go to state 119
-    PIPE            shift and go to state 118
+    RPAREN          shift and go to state 121
+    AMPERSAND       shift and go to state 122
+    PIPE            shift and go to state 123
 
 
-state 99
+state 104
 
     (59) condition -> expression . EE expression
     (60) condition -> expression . NE expression
@@ -1750,106 +1826,19 @@ state 99
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
-    EE              shift and go to state 122
-    NE              shift and go to state 123
-    LT              shift and go to state 124
-    GT              shift and go to state 120
-    LTE             shift and go to state 125
-    GTE             shift and go to state 121
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    EE              shift and go to state 124
+    NE              shift and go to state 125
+    LT              shift and go to state 126
+    GT              shift and go to state 127
+    LTE             shift and go to state 128
+    GTE             shift and go to state 129
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 100
-
-    (46) assignment -> IDENTIFIER EQUALS expression . SEMICOLON
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    SEMICOLON       shift and go to state 126
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 101
-
-    (54) function_call -> IDENTIFIER LPAREN arglist . RPAREN
-    (57) arglist -> arglist . COMMA expression
-
-    RPAREN          shift and go to state 127
-    COMMA           shift and go to state 128
-
-
-state 102
-
-    (55) function_call -> IDENTIFIER LPAREN RPAREN .
-
-    RPAREN          reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    PLUS            reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    MINUS           reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    ASTERISK        reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    FSLASH          reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    SEMICOLON       reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    EE              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    NE              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    LT              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    GT              reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    LTE             reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    GTE             reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    COMMA           reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    AMPERSAND       reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-    PIPE            reduce using rule 55 (function_call -> IDENTIFIER LPAREN RPAREN .)
-
-
-state 103
-
-    (58) arglist -> expression .
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    RPAREN          reduce using rule 58 (arglist -> expression .)
-    COMMA           reduce using rule 58 (arglist -> expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 104
-
-    (31) if_block -> IF LPAREN condition . RPAREN statement_block
-    (65) condition -> condition . AMPERSAND AMPERSAND condition
-    (66) condition -> condition . PIPE PIPE condition
-
-    RPAREN          shift and go to state 129
-    AMPERSAND       shift and go to state 119
-    PIPE            shift and go to state 118
+    FSLASH          shift and go to state 93
 
 
 state 105
-
-    (45) assignment -> pointer_var EQUALS expression . SEMICOLON
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    SEMICOLON       shift and go to state 130
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 106
 
     (32) else_block -> ELSE statement_block .
 
@@ -1861,6 +1850,20 @@ state 106
     IF              reduce using rule 32 (else_block -> ELSE statement_block .)
     RBRACE          reduce using rule 32 (else_block -> ELSE statement_block .)
     ELSE            reduce using rule 32 (else_block -> ELSE statement_block .)
+
+
+state 106
+
+    (28) statement_block -> statement .
+
+    RETURN          reduce using rule 28 (statement_block -> statement .)
+    DATA_TYPE       reduce using rule 28 (statement_block -> statement .)
+    IDENTIFIER      reduce using rule 28 (statement_block -> statement .)
+    ASTERISK        reduce using rule 28 (statement_block -> statement .)
+    WHILE           reduce using rule 28 (statement_block -> statement .)
+    IF              reduce using rule 28 (statement_block -> statement .)
+    RBRACE          reduce using rule 28 (statement_block -> statement .)
+    ELSE            reduce using rule 28 (statement_block -> statement .)
 
 
 state 107
@@ -1879,20 +1882,6 @@ state 107
 
 state 108
 
-    (28) statement_block -> statement .
-
-    RETURN          reduce using rule 28 (statement_block -> statement .)
-    DATA_TYPE       reduce using rule 28 (statement_block -> statement .)
-    IDENTIFIER      reduce using rule 28 (statement_block -> statement .)
-    ASTERISK        reduce using rule 28 (statement_block -> statement .)
-    WHILE           reduce using rule 28 (statement_block -> statement .)
-    IF              reduce using rule 28 (statement_block -> statement .)
-    RBRACE          reduce using rule 28 (statement_block -> statement .)
-    ELSE            reduce using rule 28 (statement_block -> statement .)
-
-
-state 109
-
     (30) statement_block -> LBRACE . statement_list RBRACE
     (21) statement_list -> . statement_list statement
     (22) statement_list -> . empty
@@ -1905,58 +1894,78 @@ state 109
     WHILE           reduce using rule 71 (empty -> .)
     IF              reduce using rule 71 (empty -> .)
 
-    statement_list                 shift and go to state 131
-    empty                          shift and go to state 46
+    statement_list                 shift and go to state 130
+    empty                          shift and go to state 48
+
+state 109
+
+    (31) if_block -> IF LPAREN condition . RPAREN statement_block
+    (65) condition -> condition . AMPERSAND AMPERSAND condition
+    (66) condition -> condition . PIPE PIPE condition
+
+    RPAREN          shift and go to state 131
+    AMPERSAND       shift and go to state 122
+    PIPE            shift and go to state 123
+
 
 state 110
 
-    (49) expression -> LPAREN expression RPAREN .
-
-    EE              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    NE              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    LT              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    GT              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    LTE             reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    GTE             reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    PLUS            reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    MINUS           reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    ASTERISK        reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    FSLASH          reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    SEMICOLON       reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    RPAREN          reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    COMMA           reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    AMPERSAND       reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-    PIPE            reduce using rule 49 (expression -> LPAREN expression RPAREN .)
-
-
-state 111
-
-    (51) expression -> expression FSLASH expression .
+    (47) expression -> expression PLUS expression .
     (47) expression -> expression . PLUS expression
     (48) expression -> expression . MINUS expression
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
-    EE              reduce using rule 51 (expression -> expression FSLASH expression .)
-    NE              reduce using rule 51 (expression -> expression FSLASH expression .)
-    LT              reduce using rule 51 (expression -> expression FSLASH expression .)
-    GT              reduce using rule 51 (expression -> expression FSLASH expression .)
-    LTE             reduce using rule 51 (expression -> expression FSLASH expression .)
-    GTE             reduce using rule 51 (expression -> expression FSLASH expression .)
-    PLUS            reduce using rule 51 (expression -> expression FSLASH expression .)
-    MINUS           reduce using rule 51 (expression -> expression FSLASH expression .)
-    ASTERISK        reduce using rule 51 (expression -> expression FSLASH expression .)
-    FSLASH          reduce using rule 51 (expression -> expression FSLASH expression .)
-    SEMICOLON       reduce using rule 51 (expression -> expression FSLASH expression .)
-    RPAREN          reduce using rule 51 (expression -> expression FSLASH expression .)
-    COMMA           reduce using rule 51 (expression -> expression FSLASH expression .)
-    AMPERSAND       reduce using rule 51 (expression -> expression FSLASH expression .)
-    PIPE            reduce using rule 51 (expression -> expression FSLASH expression .)
+    SEMICOLON       reduce using rule 47 (expression -> expression PLUS expression .)
+    PLUS            reduce using rule 47 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 47 (expression -> expression PLUS expression .)
+    RPAREN          reduce using rule 47 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 47 (expression -> expression PLUS expression .)
+    EE              reduce using rule 47 (expression -> expression PLUS expression .)
+    NE              reduce using rule 47 (expression -> expression PLUS expression .)
+    LT              reduce using rule 47 (expression -> expression PLUS expression .)
+    GT              reduce using rule 47 (expression -> expression PLUS expression .)
+    LTE             reduce using rule 47 (expression -> expression PLUS expression .)
+    GTE             reduce using rule 47 (expression -> expression PLUS expression .)
+    AMPERSAND       reduce using rule 47 (expression -> expression PLUS expression .)
+    PIPE            reduce using rule 47 (expression -> expression PLUS expression .)
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
 
-  ! PLUS            [ shift and go to state 93 ]
-  ! MINUS           [ shift and go to state 94 ]
-  ! ASTERISK        [ shift and go to state 92 ]
-  ! FSLASH          [ shift and go to state 91 ]
+  ! ASTERISK        [ reduce using rule 47 (expression -> expression PLUS expression .) ]
+  ! FSLASH          [ reduce using rule 47 (expression -> expression PLUS expression .) ]
+  ! PLUS            [ shift and go to state 90 ]
+  ! MINUS           [ shift and go to state 91 ]
+
+
+state 111
+
+    (48) expression -> expression MINUS expression .
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    SEMICOLON       reduce using rule 48 (expression -> expression MINUS expression .)
+    PLUS            reduce using rule 48 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 48 (expression -> expression MINUS expression .)
+    RPAREN          reduce using rule 48 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 48 (expression -> expression MINUS expression .)
+    EE              reduce using rule 48 (expression -> expression MINUS expression .)
+    NE              reduce using rule 48 (expression -> expression MINUS expression .)
+    LT              reduce using rule 48 (expression -> expression MINUS expression .)
+    GT              reduce using rule 48 (expression -> expression MINUS expression .)
+    LTE             reduce using rule 48 (expression -> expression MINUS expression .)
+    GTE             reduce using rule 48 (expression -> expression MINUS expression .)
+    AMPERSAND       reduce using rule 48 (expression -> expression MINUS expression .)
+    PIPE            reduce using rule 48 (expression -> expression MINUS expression .)
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
+
+  ! ASTERISK        [ reduce using rule 48 (expression -> expression MINUS expression .) ]
+  ! FSLASH          [ reduce using rule 48 (expression -> expression MINUS expression .) ]
+  ! PLUS            [ shift and go to state 90 ]
+  ! MINUS           [ shift and go to state 91 ]
 
 
 state 112
@@ -1967,100 +1976,173 @@ state 112
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    SEMICOLON       reduce using rule 50 (expression -> expression ASTERISK expression .)
+    PLUS            reduce using rule 50 (expression -> expression ASTERISK expression .)
+    MINUS           reduce using rule 50 (expression -> expression ASTERISK expression .)
+    ASTERISK        reduce using rule 50 (expression -> expression ASTERISK expression .)
+    FSLASH          reduce using rule 50 (expression -> expression ASTERISK expression .)
+    RPAREN          reduce using rule 50 (expression -> expression ASTERISK expression .)
+    COMMA           reduce using rule 50 (expression -> expression ASTERISK expression .)
     EE              reduce using rule 50 (expression -> expression ASTERISK expression .)
     NE              reduce using rule 50 (expression -> expression ASTERISK expression .)
     LT              reduce using rule 50 (expression -> expression ASTERISK expression .)
     GT              reduce using rule 50 (expression -> expression ASTERISK expression .)
     LTE             reduce using rule 50 (expression -> expression ASTERISK expression .)
     GTE             reduce using rule 50 (expression -> expression ASTERISK expression .)
-    PLUS            reduce using rule 50 (expression -> expression ASTERISK expression .)
-    MINUS           reduce using rule 50 (expression -> expression ASTERISK expression .)
-    ASTERISK        reduce using rule 50 (expression -> expression ASTERISK expression .)
-    FSLASH          reduce using rule 50 (expression -> expression ASTERISK expression .)
-    SEMICOLON       reduce using rule 50 (expression -> expression ASTERISK expression .)
-    RPAREN          reduce using rule 50 (expression -> expression ASTERISK expression .)
-    COMMA           reduce using rule 50 (expression -> expression ASTERISK expression .)
     AMPERSAND       reduce using rule 50 (expression -> expression ASTERISK expression .)
     PIPE            reduce using rule 50 (expression -> expression ASTERISK expression .)
 
-  ! PLUS            [ shift and go to state 93 ]
-  ! MINUS           [ shift and go to state 94 ]
+  ! PLUS            [ shift and go to state 90 ]
+  ! MINUS           [ shift and go to state 91 ]
   ! ASTERISK        [ shift and go to state 92 ]
-  ! FSLASH          [ shift and go to state 91 ]
+  ! FSLASH          [ shift and go to state 93 ]
 
 
 state 113
 
-    (47) expression -> expression PLUS expression .
+    (51) expression -> expression FSLASH expression .
     (47) expression -> expression . PLUS expression
     (48) expression -> expression . MINUS expression
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
-    EE              reduce using rule 47 (expression -> expression PLUS expression .)
-    NE              reduce using rule 47 (expression -> expression PLUS expression .)
-    LT              reduce using rule 47 (expression -> expression PLUS expression .)
-    GT              reduce using rule 47 (expression -> expression PLUS expression .)
-    LTE             reduce using rule 47 (expression -> expression PLUS expression .)
-    GTE             reduce using rule 47 (expression -> expression PLUS expression .)
-    PLUS            reduce using rule 47 (expression -> expression PLUS expression .)
-    MINUS           reduce using rule 47 (expression -> expression PLUS expression .)
-    SEMICOLON       reduce using rule 47 (expression -> expression PLUS expression .)
-    RPAREN          reduce using rule 47 (expression -> expression PLUS expression .)
-    COMMA           reduce using rule 47 (expression -> expression PLUS expression .)
-    AMPERSAND       reduce using rule 47 (expression -> expression PLUS expression .)
-    PIPE            reduce using rule 47 (expression -> expression PLUS expression .)
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    SEMICOLON       reduce using rule 51 (expression -> expression FSLASH expression .)
+    PLUS            reduce using rule 51 (expression -> expression FSLASH expression .)
+    MINUS           reduce using rule 51 (expression -> expression FSLASH expression .)
+    ASTERISK        reduce using rule 51 (expression -> expression FSLASH expression .)
+    FSLASH          reduce using rule 51 (expression -> expression FSLASH expression .)
+    RPAREN          reduce using rule 51 (expression -> expression FSLASH expression .)
+    COMMA           reduce using rule 51 (expression -> expression FSLASH expression .)
+    EE              reduce using rule 51 (expression -> expression FSLASH expression .)
+    NE              reduce using rule 51 (expression -> expression FSLASH expression .)
+    LT              reduce using rule 51 (expression -> expression FSLASH expression .)
+    GT              reduce using rule 51 (expression -> expression FSLASH expression .)
+    LTE             reduce using rule 51 (expression -> expression FSLASH expression .)
+    GTE             reduce using rule 51 (expression -> expression FSLASH expression .)
+    AMPERSAND       reduce using rule 51 (expression -> expression FSLASH expression .)
+    PIPE            reduce using rule 51 (expression -> expression FSLASH expression .)
 
-  ! ASTERISK        [ reduce using rule 47 (expression -> expression PLUS expression .) ]
-  ! FSLASH          [ reduce using rule 47 (expression -> expression PLUS expression .) ]
-  ! PLUS            [ shift and go to state 93 ]
-  ! MINUS           [ shift and go to state 94 ]
+  ! PLUS            [ shift and go to state 90 ]
+  ! MINUS           [ shift and go to state 91 ]
+  ! ASTERISK        [ shift and go to state 92 ]
+  ! FSLASH          [ shift and go to state 93 ]
 
 
 state 114
 
-    (48) expression -> expression MINUS expression .
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
+    (49) expression -> LPAREN expression RPAREN .
 
-    EE              reduce using rule 48 (expression -> expression MINUS expression .)
-    NE              reduce using rule 48 (expression -> expression MINUS expression .)
-    LT              reduce using rule 48 (expression -> expression MINUS expression .)
-    GT              reduce using rule 48 (expression -> expression MINUS expression .)
-    LTE             reduce using rule 48 (expression -> expression MINUS expression .)
-    GTE             reduce using rule 48 (expression -> expression MINUS expression .)
-    PLUS            reduce using rule 48 (expression -> expression MINUS expression .)
-    MINUS           reduce using rule 48 (expression -> expression MINUS expression .)
-    SEMICOLON       reduce using rule 48 (expression -> expression MINUS expression .)
-    RPAREN          reduce using rule 48 (expression -> expression MINUS expression .)
-    COMMA           reduce using rule 48 (expression -> expression MINUS expression .)
-    AMPERSAND       reduce using rule 48 (expression -> expression MINUS expression .)
-    PIPE            reduce using rule 48 (expression -> expression MINUS expression .)
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-  ! ASTERISK        [ reduce using rule 48 (expression -> expression MINUS expression .) ]
-  ! FSLASH          [ reduce using rule 48 (expression -> expression MINUS expression .) ]
-  ! PLUS            [ shift and go to state 93 ]
-  ! MINUS           [ shift and go to state 94 ]
+    SEMICOLON       reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    PLUS            reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    ASTERISK        reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    FSLASH          reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    EE              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    NE              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    LT              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    GT              reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    LTE             reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    GTE             reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    AMPERSAND       reduce using rule 49 (expression -> LPAREN expression RPAREN .)
+    PIPE            reduce using rule 49 (expression -> LPAREN expression RPAREN .)
 
 
 state 115
+
+    (45) assignment -> pointer_var EQUALS expression SEMICOLON .
+
+    RETURN          reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    DATA_TYPE       reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    IDENTIFIER      reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    ASTERISK        reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    WHILE           reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    IF              reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    RBRACE          reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+    ELSE            reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
+
+
+state 116
+
+    (46) assignment -> IDENTIFIER EQUALS expression SEMICOLON .
+
+    RETURN          reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    DATA_TYPE       reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    IDENTIFIER      reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    ASTERISK        reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    WHILE           reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    IF              reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    RBRACE          reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+    ELSE            reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
+
+
+state 117
+
+    (54) function_call -> IDENTIFIER LPAREN arglist RPAREN .
+
+    SEMICOLON       reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    PLUS            reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    MINUS           reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    ASTERISK        reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    FSLASH          reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    RPAREN          reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    COMMA           reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    EE              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    NE              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    LT              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    GT              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    LTE             reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    GTE             reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    AMPERSAND       reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+    PIPE            reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
+
+
+state 118
+
+    (57) arglist -> arglist COMMA . expression
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    expression                     shift and go to state 132
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 119
 
     (67) condition -> LPAREN condition . RPAREN
     (65) condition -> condition . AMPERSAND AMPERSAND condition
     (66) condition -> condition . PIPE PIPE condition
 
-    RPAREN          shift and go to state 132
-    AMPERSAND       shift and go to state 119
-    PIPE            shift and go to state 118
+    RPAREN          shift and go to state 133
+    AMPERSAND       shift and go to state 122
+    PIPE            shift and go to state 123
 
 
-state 116
+state 120
 
     (49) expression -> LPAREN expression . RPAREN
     (59) condition -> expression . EE expression
@@ -2074,20 +2156,20 @@ state 116
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
-    RPAREN          shift and go to state 110
-    EE              shift and go to state 122
-    NE              shift and go to state 123
-    LT              shift and go to state 124
-    GT              shift and go to state 120
-    LTE             shift and go to state 125
-    GTE             shift and go to state 121
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    RPAREN          shift and go to state 114
+    EE              shift and go to state 124
+    NE              shift and go to state 125
+    LT              shift and go to state 126
+    GT              shift and go to state 127
+    LTE             shift and go to state 128
+    GTE             shift and go to state 129
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
 
 
-state 117
+state 121
 
     (35) while_block -> WHILE LPAREN condition RPAREN . statement_block
     (28) statement_block -> . statement
@@ -2112,104 +2194,38 @@ state 117
     (31) if_block -> . IF LPAREN condition RPAREN statement_block
 
     SEMICOLON       shift and go to state 107
-    LBRACE          shift and go to state 109
-    DATA_TYPE       shift and go to state 51
-    IDENTIFIER      shift and go to state 56
-    ASTERISK        shift and go to state 59
-    WHILE           shift and go to state 53
-    IF              shift and go to state 61
+    LBRACE          shift and go to state 108
+    DATA_TYPE       shift and go to state 60
+    IDENTIFIER      shift and go to state 62
+    ASTERISK        shift and go to state 63
+    WHILE           shift and go to state 64
+    IF              shift and go to state 66
 
-    if_else_block                  shift and go to state 62
-    pointer_var                    shift and go to state 63
-    assignment                     shift and go to state 58
-    if_block                       shift and go to state 64
-    statement_block                shift and go to state 133
-    while_block                    shift and go to state 65
-    function_call                  shift and go to state 52
-    statement                      shift and go to state 108
-    declaration                    shift and go to state 60
+    statement_block                shift and go to state 134
+    statement                      shift and go to state 106
+    declaration                    shift and go to state 55
+    assignment                     shift and go to state 56
+    function_call                  shift and go to state 57
+    while_block                    shift and go to state 58
+    if_else_block                  shift and go to state 59
+    pointer_var                    shift and go to state 61
+    if_block                       shift and go to state 65
 
-state 118
-
-    (66) condition -> condition PIPE . PIPE condition
-
-    PIPE            shift and go to state 134
-
-
-state 119
+state 122
 
     (65) condition -> condition AMPERSAND . AMPERSAND condition
 
     AMPERSAND       shift and go to state 135
 
 
-state 120
+state 123
 
-    (62) condition -> expression GT . expression
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
+    (66) condition -> condition PIPE . PIPE condition
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
+    PIPE            shift and go to state 136
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 136
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
 
-state 121
-
-    (64) condition -> expression GTE . expression
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 137
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
-
-state 122
+state 124
 
     (59) condition -> expression EE . expression
     (47) expression -> . expression PLUS expression
@@ -2230,19 +2246,19 @@ state 122
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 138
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    expression                     shift and go to state 137
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 123
+state 125
 
     (60) condition -> expression NE . expression
     (47) expression -> . expression PLUS expression
@@ -2263,19 +2279,19 @@ state 123
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 139
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    expression                     shift and go to state 138
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 124
+state 126
 
     (61) condition -> expression LT . expression
     (47) expression -> . expression PLUS expression
@@ -2296,19 +2312,52 @@ state 124
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
-    expression                     shift and go to state 140
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    expression                     shift and go to state 139
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 125
+state 127
+
+    (62) condition -> expression GT . expression
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
+
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
+
+    expression                     shift and go to state 140
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
+
+state 128
 
     (63) condition -> expression LTE . expression
     (47) expression -> . expression PLUS expression
@@ -2329,56 +2378,21 @@ state 125
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
     expression                     shift and go to state 141
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 126
+state 129
 
-    (46) assignment -> IDENTIFIER EQUALS expression SEMICOLON .
-
-    RBRACE          reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    DATA_TYPE       reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    IDENTIFIER      reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    ASTERISK        reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    WHILE           reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    IF              reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    RETURN          reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-    ELSE            reduce using rule 46 (assignment -> IDENTIFIER EQUALS expression SEMICOLON .)
-
-
-state 127
-
-    (54) function_call -> IDENTIFIER LPAREN arglist RPAREN .
-
-    RPAREN          reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    PLUS            reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    MINUS           reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    ASTERISK        reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    FSLASH          reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    SEMICOLON       reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    EE              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    NE              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    LT              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    GT              reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    LTE             reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    GTE             reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    COMMA           reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    AMPERSAND       reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-    PIPE            reduce using rule 54 (function_call -> IDENTIFIER LPAREN arglist RPAREN .)
-
-
-state 128
-
-    (57) arglist -> arglist COMMA . expression
+    (64) condition -> expression GTE . expression
     (47) expression -> . expression PLUS expression
     (48) expression -> . expression MINUS expression
     (49) expression -> . LPAREN expression RPAREN
@@ -2397,19 +2411,57 @@ state 128
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 73
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 71
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    scalar_var                     shift and go to state 70
     expression                     shift and go to state 142
-    pointer_var                    shift and go to state 68
-    function_call                  shift and go to state 71
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
-state 129
+state 130
+
+    (30) statement_block -> LBRACE statement_list . RBRACE
+    (21) statement_list -> statement_list . statement
+    (23) statement -> . declaration
+    (24) statement -> . assignment
+    (25) statement -> . function_call SEMICOLON
+    (26) statement -> . while_block
+    (27) statement -> . if_else_block
+    (36) declaration -> . DATA_TYPE decl_var_list SEMICOLON
+    (45) assignment -> . pointer_var EQUALS expression SEMICOLON
+    (46) assignment -> . IDENTIFIER EQUALS expression SEMICOLON
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (35) while_block -> . WHILE LPAREN condition RPAREN statement_block
+    (33) if_else_block -> . if_block
+    (34) if_else_block -> . if_block else_block
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (31) if_block -> . IF LPAREN condition RPAREN statement_block
+
+    RBRACE          shift and go to state 143
+    DATA_TYPE       shift and go to state 60
+    IDENTIFIER      shift and go to state 62
+    ASTERISK        shift and go to state 63
+    WHILE           shift and go to state 64
+    IF              shift and go to state 66
+
+    statement                      shift and go to state 52
+    declaration                    shift and go to state 55
+    assignment                     shift and go to state 56
+    function_call                  shift and go to state 57
+    while_block                    shift and go to state 58
+    if_else_block                  shift and go to state 59
+    pointer_var                    shift and go to state 61
+    if_block                       shift and go to state 65
+
+state 131
 
     (31) if_block -> IF LPAREN condition RPAREN . statement_block
     (28) statement_block -> . statement
@@ -2434,85 +2486,49 @@ state 129
     (31) if_block -> . IF LPAREN condition RPAREN statement_block
 
     SEMICOLON       shift and go to state 107
-    LBRACE          shift and go to state 109
-    DATA_TYPE       shift and go to state 51
-    IDENTIFIER      shift and go to state 56
-    ASTERISK        shift and go to state 59
-    WHILE           shift and go to state 53
-    IF              shift and go to state 61
+    LBRACE          shift and go to state 108
+    DATA_TYPE       shift and go to state 60
+    IDENTIFIER      shift and go to state 62
+    ASTERISK        shift and go to state 63
+    WHILE           shift and go to state 64
+    IF              shift and go to state 66
 
-    if_else_block                  shift and go to state 62
-    pointer_var                    shift and go to state 63
-    assignment                     shift and go to state 58
-    if_block                       shift and go to state 64
-    statement_block                shift and go to state 143
-    while_block                    shift and go to state 65
-    function_call                  shift and go to state 52
-    statement                      shift and go to state 108
-    declaration                    shift and go to state 60
-
-state 130
-
-    (45) assignment -> pointer_var EQUALS expression SEMICOLON .
-
-    RBRACE          reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    DATA_TYPE       reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    IDENTIFIER      reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    ASTERISK        reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    WHILE           reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    IF              reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    RETURN          reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-    ELSE            reduce using rule 45 (assignment -> pointer_var EQUALS expression SEMICOLON .)
-
-
-state 131
-
-    (30) statement_block -> LBRACE statement_list . RBRACE
-    (21) statement_list -> statement_list . statement
-    (23) statement -> . declaration
-    (24) statement -> . assignment
-    (25) statement -> . function_call SEMICOLON
-    (26) statement -> . while_block
-    (27) statement -> . if_else_block
-    (36) declaration -> . DATA_TYPE decl_var_list SEMICOLON
-    (45) assignment -> . pointer_var EQUALS expression SEMICOLON
-    (46) assignment -> . IDENTIFIER EQUALS expression SEMICOLON
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (35) while_block -> . WHILE LPAREN condition RPAREN statement_block
-    (33) if_else_block -> . if_block
-    (34) if_else_block -> . if_block else_block
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (31) if_block -> . IF LPAREN condition RPAREN statement_block
-
-    RBRACE          shift and go to state 144
-    DATA_TYPE       shift and go to state 51
-    IDENTIFIER      shift and go to state 56
-    ASTERISK        shift and go to state 59
-    WHILE           shift and go to state 53
-    IF              shift and go to state 61
-
-    if_else_block                  shift and go to state 62
-    pointer_var                    shift and go to state 63
-    assignment                     shift and go to state 58
-    if_block                       shift and go to state 64
-    function_call                  shift and go to state 52
-    while_block                    shift and go to state 65
-    statement                      shift and go to state 55
-    declaration                    shift and go to state 60
+    statement_block                shift and go to state 144
+    statement                      shift and go to state 106
+    declaration                    shift and go to state 55
+    assignment                     shift and go to state 56
+    function_call                  shift and go to state 57
+    while_block                    shift and go to state 58
+    if_else_block                  shift and go to state 59
+    pointer_var                    shift and go to state 61
+    if_block                       shift and go to state 65
 
 state 132
 
-    (67) condition -> LPAREN condition RPAREN .
+    (57) arglist -> arglist COMMA expression .
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
 
-    AMPERSAND       reduce using rule 67 (condition -> LPAREN condition RPAREN .)
-    PIPE            reduce using rule 67 (condition -> LPAREN condition RPAREN .)
-    RPAREN          reduce using rule 67 (condition -> LPAREN condition RPAREN .)
+    RPAREN          reduce using rule 57 (arglist -> arglist COMMA expression .)
+    COMMA           reduce using rule 57 (arglist -> arglist COMMA expression .)
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
 
 
 state 133
+
+    (67) condition -> LPAREN condition RPAREN .
+
+    RPAREN          reduce using rule 67 (condition -> LPAREN condition RPAREN .)
+    AMPERSAND       reduce using rule 67 (condition -> LPAREN condition RPAREN .)
+    PIPE            reduce using rule 67 (condition -> LPAREN condition RPAREN .)
+
+
+state 134
 
     (35) while_block -> WHILE LPAREN condition RPAREN statement_block .
 
@@ -2525,49 +2541,6 @@ state 133
     RBRACE          reduce using rule 35 (while_block -> WHILE LPAREN condition RPAREN statement_block .)
     ELSE            reduce using rule 35 (while_block -> WHILE LPAREN condition RPAREN statement_block .)
 
-
-state 134
-
-    (66) condition -> condition PIPE PIPE . condition
-    (59) condition -> . expression EE expression
-    (60) condition -> . expression NE expression
-    (61) condition -> . expression LT expression
-    (62) condition -> . expression GT expression
-    (63) condition -> . expression LTE expression
-    (64) condition -> . expression GTE expression
-    (65) condition -> . condition AMPERSAND AMPERSAND condition
-    (66) condition -> . condition PIPE PIPE condition
-    (67) condition -> . LPAREN condition RPAREN
-    (47) expression -> . expression PLUS expression
-    (48) expression -> . expression MINUS expression
-    (49) expression -> . LPAREN expression RPAREN
-    (50) expression -> . expression ASTERISK expression
-    (51) expression -> . expression FSLASH expression
-    (52) expression -> . MINUS expression
-    (53) expression -> . function_call
-    (68) expression -> . CONSTANT
-    (69) expression -> . pointer_var
-    (70) expression -> . scalar_var
-    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
-    (55) function_call -> . IDENTIFIER LPAREN RPAREN
-    (56) function_call -> . ASTERISK function_call
-    (41) pointer_var -> . ASTERISK pointer_var
-    (42) pointer_var -> . ASTERISK scalar_var
-    (43) scalar_var -> . IDENTIFIER
-    (44) scalar_var -> . AMPERSAND IDENTIFIER
-
-    LPAREN          shift and go to state 97
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
-    AMPERSAND       shift and go to state 77
-
-    pointer_var                    shift and go to state 68
-    scalar_var                     shift and go to state 70
-    function_call                  shift and go to state 71
-    expression                     shift and go to state 99
-    condition                      shift and go to state 145
 
 state 135
 
@@ -2599,54 +2572,63 @@ state 135
     (43) scalar_var -> . IDENTIFIER
     (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    LPAREN          shift and go to state 97
-    MINUS           shift and go to state 76
-    CONSTANT        shift and go to state 72
-    IDENTIFIER      shift and go to state 74
-    ASTERISK        shift and go to state 59
+    LPAREN          shift and go to state 102
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
     AMPERSAND       shift and go to state 77
 
-    pointer_var                    shift and go to state 68
-    scalar_var                     shift and go to state 70
-    function_call                  shift and go to state 71
-    expression                     shift and go to state 99
-    condition                      shift and go to state 146
+    condition                      shift and go to state 145
+    expression                     shift and go to state 104
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 136
 
-    (62) condition -> expression GT expression .
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
+    (66) condition -> condition PIPE PIPE . condition
+    (59) condition -> . expression EE expression
+    (60) condition -> . expression NE expression
+    (61) condition -> . expression LT expression
+    (62) condition -> . expression GT expression
+    (63) condition -> . expression LTE expression
+    (64) condition -> . expression GTE expression
+    (65) condition -> . condition AMPERSAND AMPERSAND condition
+    (66) condition -> . condition PIPE PIPE condition
+    (67) condition -> . LPAREN condition RPAREN
+    (47) expression -> . expression PLUS expression
+    (48) expression -> . expression MINUS expression
+    (49) expression -> . LPAREN expression RPAREN
+    (50) expression -> . expression ASTERISK expression
+    (51) expression -> . expression FSLASH expression
+    (52) expression -> . MINUS expression
+    (53) expression -> . function_call
+    (68) expression -> . CONSTANT
+    (69) expression -> . pointer_var
+    (70) expression -> . scalar_var
+    (54) function_call -> . IDENTIFIER LPAREN arglist RPAREN
+    (55) function_call -> . IDENTIFIER LPAREN RPAREN
+    (56) function_call -> . ASTERISK function_call
+    (41) pointer_var -> . ASTERISK pointer_var
+    (42) pointer_var -> . ASTERISK scalar_var
+    (43) scalar_var -> . IDENTIFIER
+    (44) scalar_var -> . AMPERSAND IDENTIFIER
 
-    AMPERSAND       reduce using rule 62 (condition -> expression GT expression .)
-    PIPE            reduce using rule 62 (condition -> expression GT expression .)
-    RPAREN          reduce using rule 62 (condition -> expression GT expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    LPAREN          shift and go to state 102
+    MINUS           shift and go to state 70
+    CONSTANT        shift and go to state 73
+    IDENTIFIER      shift and go to state 76
+    ASTERISK        shift and go to state 63
+    AMPERSAND       shift and go to state 77
 
+    condition                      shift and go to state 146
+    expression                     shift and go to state 104
+    function_call                  shift and go to state 72
+    pointer_var                    shift and go to state 74
+    scalar_var                     shift and go to state 75
 
 state 137
-
-    (64) condition -> expression GTE expression .
-    (47) expression -> expression . PLUS expression
-    (48) expression -> expression . MINUS expression
-    (50) expression -> expression . ASTERISK expression
-    (51) expression -> expression . FSLASH expression
-
-    AMPERSAND       reduce using rule 64 (condition -> expression GTE expression .)
-    PIPE            reduce using rule 64 (condition -> expression GTE expression .)
-    RPAREN          reduce using rule 64 (condition -> expression GTE expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
-
-
-state 138
 
     (59) condition -> expression EE expression .
     (47) expression -> expression . PLUS expression
@@ -2654,16 +2636,16 @@ state 138
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    RPAREN          reduce using rule 59 (condition -> expression EE expression .)
     AMPERSAND       reduce using rule 59 (condition -> expression EE expression .)
     PIPE            reduce using rule 59 (condition -> expression EE expression .)
-    RPAREN          reduce using rule 59 (condition -> expression EE expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
 
 
-state 139
+state 138
 
     (60) condition -> expression NE expression .
     (47) expression -> expression . PLUS expression
@@ -2671,16 +2653,16 @@ state 139
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    RPAREN          reduce using rule 60 (condition -> expression NE expression .)
     AMPERSAND       reduce using rule 60 (condition -> expression NE expression .)
     PIPE            reduce using rule 60 (condition -> expression NE expression .)
-    RPAREN          reduce using rule 60 (condition -> expression NE expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
 
 
-state 140
+state 139
 
     (61) condition -> expression LT expression .
     (47) expression -> expression . PLUS expression
@@ -2688,13 +2670,30 @@ state 140
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    RPAREN          reduce using rule 61 (condition -> expression LT expression .)
     AMPERSAND       reduce using rule 61 (condition -> expression LT expression .)
     PIPE            reduce using rule 61 (condition -> expression LT expression .)
-    RPAREN          reduce using rule 61 (condition -> expression LT expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
+
+
+state 140
+
+    (62) condition -> expression GT expression .
+    (47) expression -> expression . PLUS expression
+    (48) expression -> expression . MINUS expression
+    (50) expression -> expression . ASTERISK expression
+    (51) expression -> expression . FSLASH expression
+
+    RPAREN          reduce using rule 62 (condition -> expression GT expression .)
+    AMPERSAND       reduce using rule 62 (condition -> expression GT expression .)
+    PIPE            reduce using rule 62 (condition -> expression GT expression .)
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
+    ASTERISK        shift and go to state 92
+    FSLASH          shift and go to state 93
 
 
 state 141
@@ -2705,46 +2704,33 @@ state 141
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
+    RPAREN          reduce using rule 63 (condition -> expression LTE expression .)
     AMPERSAND       reduce using rule 63 (condition -> expression LTE expression .)
     PIPE            reduce using rule 63 (condition -> expression LTE expression .)
-    RPAREN          reduce using rule 63 (condition -> expression LTE expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
 
 
 state 142
 
-    (57) arglist -> arglist COMMA expression .
+    (64) condition -> expression GTE expression .
     (47) expression -> expression . PLUS expression
     (48) expression -> expression . MINUS expression
     (50) expression -> expression . ASTERISK expression
     (51) expression -> expression . FSLASH expression
 
-    RPAREN          reduce using rule 57 (arglist -> arglist COMMA expression .)
-    COMMA           reduce using rule 57 (arglist -> arglist COMMA expression .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    RPAREN          reduce using rule 64 (condition -> expression GTE expression .)
+    AMPERSAND       reduce using rule 64 (condition -> expression GTE expression .)
+    PIPE            reduce using rule 64 (condition -> expression GTE expression .)
+    PLUS            shift and go to state 90
+    MINUS           shift and go to state 91
     ASTERISK        shift and go to state 92
-    FSLASH          shift and go to state 91
+    FSLASH          shift and go to state 93
 
 
 state 143
-
-    (31) if_block -> IF LPAREN condition RPAREN statement_block .
-
-    RETURN          reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    DATA_TYPE       reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    IDENTIFIER      reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    ASTERISK        reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    WHILE           reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    IF              reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    RBRACE          reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-    ELSE            reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
-
-
-state 144
 
     (30) statement_block -> LBRACE statement_list RBRACE .
 
@@ -2758,30 +2744,44 @@ state 144
     ELSE            reduce using rule 30 (statement_block -> LBRACE statement_list RBRACE .)
 
 
+state 144
+
+    (31) if_block -> IF LPAREN condition RPAREN statement_block .
+
+    ELSE            reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    RETURN          reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    DATA_TYPE       reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    IDENTIFIER      reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    ASTERISK        reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    WHILE           reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    IF              reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+    RBRACE          reduce using rule 31 (if_block -> IF LPAREN condition RPAREN statement_block .)
+
+
 state 145
-
-    (66) condition -> condition PIPE PIPE condition .
-    (65) condition -> condition . AMPERSAND AMPERSAND condition
-    (66) condition -> condition . PIPE PIPE condition
-
-    AMPERSAND       reduce using rule 66 (condition -> condition PIPE PIPE condition .)
-    PIPE            reduce using rule 66 (condition -> condition PIPE PIPE condition .)
-    RPAREN          reduce using rule 66 (condition -> condition PIPE PIPE condition .)
-
-  ! AMPERSAND       [ shift and go to state 119 ]
-  ! PIPE            [ shift and go to state 118 ]
-
-
-state 146
 
     (65) condition -> condition AMPERSAND AMPERSAND condition .
     (65) condition -> condition . AMPERSAND AMPERSAND condition
     (66) condition -> condition . PIPE PIPE condition
 
+    RPAREN          reduce using rule 65 (condition -> condition AMPERSAND AMPERSAND condition .)
     AMPERSAND       reduce using rule 65 (condition -> condition AMPERSAND AMPERSAND condition .)
     PIPE            reduce using rule 65 (condition -> condition AMPERSAND AMPERSAND condition .)
-    RPAREN          reduce using rule 65 (condition -> condition AMPERSAND AMPERSAND condition .)
 
-  ! AMPERSAND       [ shift and go to state 119 ]
-  ! PIPE            [ shift and go to state 118 ]
+  ! AMPERSAND       [ shift and go to state 122 ]
+  ! PIPE            [ shift and go to state 123 ]
+
+
+state 146
+
+    (66) condition -> condition PIPE PIPE condition .
+    (65) condition -> condition . AMPERSAND AMPERSAND condition
+    (66) condition -> condition . PIPE PIPE condition
+
+    RPAREN          reduce using rule 66 (condition -> condition PIPE PIPE condition .)
+    AMPERSAND       reduce using rule 66 (condition -> condition PIPE PIPE condition .)
+    PIPE            reduce using rule 66 (condition -> condition PIPE PIPE condition .)
+
+  ! AMPERSAND       [ shift and go to state 122 ]
+  ! PIPE            [ shift and go to state 123 ]
 
