@@ -57,6 +57,21 @@ op_int_mips = {
 		"OR":"||",
 	}
 
+op_float_mips = {
+		"PLUS":"add.s",
+		"MINUS":"sub.s",
+		"MUL":"mul.s",
+		"DIV":"/",
+		"LT":"slt",
+		"GT":">",
+		"LE":"<=",
+		"GE":">=",
+		"EQ":"==",
+		"NE":"!=",
+		"AND":"&&",
+		"OR":"||",
+	}
+
 class Scope:
 
 
@@ -151,22 +166,39 @@ block_id, t_id = -1, 0
 added_globals = False
 block_code = dict()
 block_goto = [None]
-registers = {
+registers_int = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
+	}
+registers_float = {
+	"f10":True,"f12":True,"f14":True,"f16":True,"f18":True,
+	"f20":True,"f22":True,"f24":True,"f26":True,"f28":True,
+	"f30":True,
 	}
 
 def reset_registers():
-	for reg in registers.keys():
-		registers[reg] = True
+	for reg in registers_float.keys():
+		registers_float[reg] = True
+	for reg in registers_int.keys():
+		registers_int[reg] = True
 
-def get_register():
-	for reg in sorted(registers.keys()):
-		if (registers[reg]):
-			registers[reg] = False
-			return reg
+def get_register(is_float=False):
+	if is_float:
+		for reg in sorted(registers_float.keys()):
+			if (registers_float[reg]):
+				registers_float[reg] = False
+				return reg
+	else:
+		for reg in sorted(registers_int.keys()):
+			if (registers_int[reg]):
+				registers_int[reg] = False
+				return reg
 
 def free_register(reg):
-	registers[reg] = True
+	if reg[0]=='s':
+		registers_int[reg] = True
+	else:
+		registers_float[reg] = True
+
 
 def print_globals():
 	spimfile.write("\n")
@@ -345,7 +377,6 @@ class CFG_Node:
 		else:
 			block_goto[self.block] = (nextBlock, nextBlock, False)
 
-
 	def to_spim(self, astNode, function, prevBlock, prev_reg = None, is_lhs = False):
 		spim_str = ""
 		currentBlock = self.block
@@ -362,35 +393,63 @@ class CFG_Node:
 				else:
 					prev_reg = None
 		elif astNode.name == "FCALL":
+			print('FCALL')
+			print(astNode.data_type)
+			print(astNode.children[0])
+			print(function.params)
+			for param in function.params:
+				print(param.name, param.offset)
+			exit(1)
 			pass
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
-			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock, is_lhs = True)
-			spim_str += "\tsw $%s, 0($%s)\n"%(self.children[1].reg, self.children[0].reg)
+			
+			is_float = astNode.children[1].data_type[0] == 'float'
+			instr = ['sw', 's.s'][is_float]
+
+			if astNode.children[0].name == "DEREF":
+				spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock, is_lhs = True)
+				free_register(self.children[0].reg)
+				spim_str += "\t%s $%s, 0($%s)\n"%(instr, self.children[1].reg, self.children[0].reg)
+			elif astNode.children[0].name == "VAR":
+				offset = function.scope.symbols[astNode.children[0].value].offset
+				spim_str += "\t%s $%s, %d($sp)\n"%(instr, self.children[1].reg, offset)
+			else:
+				print('ERROR')
+				exit(1)
 			free_register(self.children[1].reg)
-			free_register(self.children[0].reg)
 
 		elif astNode.name == "VAR":
-			print (astNode.value)
+
+			is_float = False
+			instr = 'lw'
+			
 			if astNode.value in function.scope.symbols:
 				offset = function.scope.symbols[astNode.value].offset
-				reg = get_register()
-				spim_str += "\tlw $%s, %d($sp)\n"%(reg,offset,)
+				# is_float = function.scope.symbols[astNode.value].type == 'float'
+				reg = get_register(is_float=is_float)
+				spim_str += "\t%s $%s, %d($sp)\n"%(instr, reg,offset,)
 			else:
-				reg = get_register()
-				spim_str += "\tlw $%s, global_%s\n"%(reg,astNode.value,)
+				reg = get_register(is_float=is_float)
+				is_float = current_ST_node.symbols[astNode.value].type == 'float'
+				# is_float = current_ST_node.symbols[astNode.value].type == 'float'
+				spim_str += "\t%s $%s, global_%s\n"%(instr, reg,astNode.value,)
 			self.reg = reg
 			self.is_expression = False
 		elif astNode.name == "CONST":
-			reg = get_register()
-			spim_str += "\tli $%s, %d\n"%(reg, astNode.value,)
+			is_float = astNode.data_type[0] == 'float'
+			instr = ['li', 'li.s'][is_float]
+			reg = get_register(is_float=is_float)
+			spim_str += "\t%s $%s, %d\n"%(instr, reg, astNode.value,)
 			self.reg = reg
 			self.is_expression = False
 		elif astNode.name == "DEREF":
+			is_float = astNode.data_type[0] == 'float'
+			instr = ['lw', 'l.s'][is_float]
 			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
 			if not is_lhs:
-				reg = get_register()
-				spim_str += "\tlw $%s, 0($%s)\n"%(reg, self.children[0].reg)
+				reg = get_register(is_float=is_float)
+				spim_str += "\t%s $%s, 0($%s)\n"%(instr, reg, self.children[0].reg)
 				self.reg = reg
 				free_register(self.children[0].reg)
 				self.is_expression = False
@@ -398,23 +457,37 @@ class CFG_Node:
 				self.reg = self.children[0].reg
 
 		elif astNode.name in op_int_mips:
+			is_float = astNode.data_type[0] == 'float'
+			instr_dict = [op_int_mips, op_float_mips][is_float]
+			move_instr = ['move', 'mov.s'][is_float]
 			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
 			spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
-			reg1 = get_register()
-			op = op_int_mips[astNode.name]
+			reg1 = get_register(is_float=is_float)
+			op = instr_dict[astNode.name]
 			spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
 			free_register(self.children[0].reg)
 			free_register(self.children[1].reg)
-			reg2  =get_register()
-			spim_str += "\tmove $%s, $%s\n"%(reg2, reg1)
+			reg2  =get_register(is_float=is_float)
+			spim_str += "\t%s $%s, $%s\n"%(move_instr, reg2, reg1)
 			self.reg = reg2
 			self.is_expression = True
 			free_register(reg1)
 		elif astNode.name == "RETURN ":
+			is_float = astNode.data_type.type == 'float'
+			instr = ['move', 'mov.s'][is_float]
 			if self.children:
 				spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
-				spim_str += "\tmove $v1, $%s # move return value to $v1\n"%(self.children[0].reg)
+				spim_str += "\t%s $v1, $%s # move return value to $v1\n"%(instr, self.children[0].reg)
 			spim_str += "\tj epilogue_%s\n"%(function.name,)
+		elif astNode.name == "ADDR":
+			reg = get_register(is_float=is_float)
+			offset = function.scope.symbols[astNode.children[0].value].offset
+			spim_str += "\taddi $%s, $sp, %d\n"%(reg, offset)
+			self.reg = reg
+			self.is_expression = False
+		else:
+			print(astNode.name)
+			exit(1)
 		return spim_str
 
 	def to_str(self, start_block):
@@ -744,7 +817,7 @@ def p_decl_var(p):
 		p[0] = (p[2][0], p[2][1]+1)
 	else:
 		p[0] = (p[1], 0)
- 
+
 def p_pointer_var(p):
 	"""pointer_var : ASTERISK pointer_var
 		| ASTERISK scalar_var"""
@@ -753,6 +826,7 @@ def p_pointer_var(p):
 	if p[0].data_type[1]<0:
 		print("Too much indirection: line no  '%d' " % (p.lexer.lineno,))
 		exit(1)
+
 def p_scalar_var(p):
 	"""scalar_var : IDENTIFIER
 		| AMPERSAND IDENTIFIER"""
@@ -802,7 +876,6 @@ def p_assignment(p):
 
 
 	p[0] = AST_Node("ASGN", children = [p[1],p[3]])
-
 
 def p_expression_add(p):
 	"""expression : expression PLUS expression"""
@@ -926,7 +999,6 @@ def p_arglist(p):
 		p[0] = AST_Node("ARGLIST", children=[p[1]])
 	else:
 		p[0] = AST_Node("ARGLIST", children=p[1].children + [p[3]])
-
 
 def p_condition_ee(p):
 	"""condition : expression EE expression"""
