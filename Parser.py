@@ -14,7 +14,7 @@ file.close()
 astfile = open(sys.argv[1] + ".ast", 'w')
 cfgfile = open(sys.argv[1] + ".cfg", 'w')
 symfile = open(sys.argv[1] + ".sym", 'w')
-spimfile = open(sys.argv[1] + "2.s", 'w')
+spimfile = open(sys.argv[1] + ".s", 'w')
 
 if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
@@ -46,28 +46,28 @@ op_int_mips = {
 		"PLUS":"add",
 		"MINUS":"sub",
 		"MUL":"mul",
-		"DIV":"/",
+		"DIV":"div",
 		"LT":"slt",
-		"GT":">",
-		"LE":"<=",
-		"GE":">=",
-		"EQ":"==",
-		"NE":"!=",
-		"AND":"&&",
-		"OR":"||",
+		"GT":"slt",
+		"LE":"sle",
+		"GE":"sle",
+		"EQ":"seq",
+		"NE":"sne",
+		"AND":"and",
+		"OR":"or",
 	}
 
 op_float_mips = {
 		"PLUS":"add.s",
 		"MINUS":"sub.s",
 		"MUL":"mul.s",
-		"DIV":"/",
-		"LT":"slt",
-		"GT":">",
-		"LE":"<=",
-		"GE":">=",
-		"EQ":"==",
-		"NE":"!=",
+		"DIV":"div.s",
+		"LT":"c.lt.s",
+		"GT":"c.lt.s",
+		"LE":"c.le.s",
+		"GE":"c.le.s",
+		"EQ":"c.eq.s",
+		"NE":"c.eq.s",
 		"AND":"&&",
 		"OR":"||",
 	}
@@ -112,10 +112,10 @@ class Scope:
 	def calculate_offsets(self):
 		local_vars = []
 		offset = 0
-		print(self.function.name)
+		# print(self.function.name)
 		for name in sorted(self.symbols.keys()):
 			variable = self.symbols[name]
-			print(name, variable.is_param)
+			# print(name, variable.is_param)
 			if not variable.is_param:
 				offset += variable.width
 				variable.offset = offset
@@ -127,9 +127,9 @@ class Scope:
 			offset += variable.width
 			variable.offset = offset
 
-		print(self.function.name)
-		for name in sorted(self.symbols.keys()):
-			print(name, self.symbols[name].offset)
+		# print(self.function.name)
+		# for name in sorted(self.symbols.keys()):
+		# 	print(name, self.symbols[name].offset)
 
 
 
@@ -170,12 +170,14 @@ registers_int = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
 	}
 registers_float = {
+	"f2":True,"f4":True,"f6":True,"f8":True,
 	"f10":True,"f12":True,"f14":True,"f16":True,"f18":True,
 	"f20":True,"f22":True,"f24":True,"f26":True,"f28":True,
 	"f30":True,
 	}
 
 def reset_registers():
+	global registers_float, registers_int
 	for reg in registers_float.keys():
 		registers_float[reg] = True
 	for reg in registers_int.keys():
@@ -230,15 +232,20 @@ def print_epilogue(name):
 
 def str_spim_jump(block, prev_reg):
 	spim_str = "" 
-	if block >= 0:
+	if block >= 0 and block_goto[block] is not None:
 		goto = block_goto[block]
-		if not  goto[2]:
+		# print(block_goto)
+		# print (block, goto)
+		if not goto[2]:
 			spim_str = "\tj label%d\n"%(goto[0],)
+			reset_registers()
 		else:
 			spim_str += "\tbne $%s, $0, label%d\n"%(prev_reg, goto[0])
-			spim_str += "\tj label%d\n"%(goto[1])
+			spim_str += "\tj label%d\n"%(goto[1],)
+			reset_registers()
 	return spim_str
 
+float_cond_counter = 0
 
 class CFG_Node:
 
@@ -299,6 +306,11 @@ class CFG_Node:
 			self.address = 't' + str(t_id)
 			t_id += 1
 			self.code = self.children[0].code + [(self.address, '=', '-', self.children[0].address)]
+
+		elif astNode.name == "NOT":
+			self.address = 't' + str(t_id)
+			t_id += 1
+			self.code = self.children[0].code + [(self.address, '=', '!', self.children[0].address)]
 
 		elif astNode.name == "DEREF":
 			self.address = '*' + self.children[0].address
@@ -379,24 +391,32 @@ class CFG_Node:
 
 	def to_spim(self, astNode, function, prevBlock, prev_reg = None, is_lhs = False):
 		spim_str = ""
-		currentBlock = self.block
-		if prevBlock != currentBlock:
-			spim_str += str_spim_jump(prevBlock, prev_reg)
-			spim_str += "label%d:\n"%(currentBlock,)
+		if prevBlock != self.block:
+			spim_str += str_spim_jump(self.block-1, prev_reg)
+			spim_str += "label%d:\n"%(self.block,)
 			reset_registers()
+		
+
+		currentBlock = self.block
+
 		if astNode.name=="STMLIST" or astNode.name=="IF" or astNode.name=="WHILE":
+			child_prev_reg = None
 			for i in range(len(self.children)):
-				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock, prev_reg = prev_reg)
+				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock, prev_reg = child_prev_reg)
 				currentBlock = self.children[i].block
 				if hasattr(self.children[i], "reg"):
-					prev_reg = self.children[i].reg
+					child_prev_reg = self.children[i].reg
+					# spim_str += str_spim_jump(self.children[i].block, child_prev_reg)
+				# elif i==len(astNode.children)-1 or astNode.children[i+1].name in ['IF', 'WHILE']:
+				# 	spim_str += str_spim_jump(self.children[i].block, None)
 				else:
-					prev_reg = None
+					child_prev_reg = None
+
 		elif astNode.name == "ARGLIST":
 			offset = 0
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				print param
+				# print(param)
 				if (param[0] == "float" and param[1] == 0):
 					offset += 8
 				else:
@@ -404,12 +424,14 @@ class CFG_Node:
 			self.offset = offset
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
+				is_float = param[0] == 'float'
+				instr = ['sw', 's.s'][is_float]
 				if (param[0] == "float" and param[1] == 0):
 					offset -= 8
 				else:
 					offset -= 4
 				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
-				spim_str += "\tsw $%s, %d($sp)\n"%(self.children[i].reg, -offset, )
+				spim_str += "\t%s $%s, %d($sp)\n"%(instr, self.children[i].reg, -offset, )
 				free_register(self.children[i].reg)
 
 
@@ -434,8 +456,12 @@ class CFG_Node:
 				free_register(self.children[0].reg)
 				spim_str += "\t%s $%s, 0($%s)\n"%(instr, self.children[1].reg, self.children[0].reg)
 			elif astNode.children[0].name == "VAR":
-				offset = function.scope.symbols[astNode.children[0].value].offset
-				spim_str += "\t%s $%s, %d($sp)\n"%(instr, self.children[1].reg, offset)
+				if astNode.children[0].value in function.scope.symbols:
+					offset = function.scope.symbols[astNode.children[0].value].offset
+					spim_str += "\t%s $%s, %d($sp)\n"%(instr, self.children[1].reg, offset)
+				else:
+					spim_str += "\t%s $%s, global_%s\n"%(instr, self.children[1].reg, astNode.children[0].value)
+
 			else:
 				print('ERROR')
 				exit(1)
@@ -458,13 +484,15 @@ class CFG_Node:
 				spim_str += "\t%s $%s, global_%s\n"%(instr, reg,astNode.value,)
 			self.reg = reg
 			self.is_expression = False
+
 		elif astNode.name == "CONST":
 			is_float = astNode.data_type[0] == 'float'
 			instr = ['li', 'li.s'][is_float]
 			reg = get_register(is_float=is_float)
-			spim_str += "\t%s $%s, %d\n"%(instr, reg, astNode.value,)
+			spim_str += "\t%s $%s, %s\n"%(instr, reg, astNode.value,)
 			self.reg = reg
 			self.is_expression = False
+
 		elif astNode.name == "DEREF":
 			is_float = astNode.data_type[0] == 'float'
 			instr = ['lw', 'l.s'][is_float]
@@ -479,17 +507,52 @@ class CFG_Node:
 				self.reg = self.children[0].reg
 
 		elif astNode.name in op_int_mips:
-			is_float = astNode.data_type[0] == 'float'
+			is_float = astNode.children[0].data_type[0] == 'float'
 			instr_dict = [op_int_mips, op_float_mips][is_float]
-			move_instr = ['move', 'mov.s'][is_float]
+			move_instr = ['move', 'mov.s'][is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"]]
+			
+			# if astNode.name in ["GT", "LT", "GE", "LE", "EQ", "NE"] and self.children[1].is_expression and not self.children[0].is_expression:
+			# 	spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
+			# 	spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
+			# else:
 			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
 			spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
-			reg1 = get_register(is_float=is_float)
+			reg1 = get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			op = instr_dict[astNode.name]
-			spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
+			if (astNode.name=='GT' or astNode.name=='GE') and not is_float:
+				spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[1].reg, self.children[0].reg)
+			elif astNode.name=='DIV':
+				if is_float:
+					spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
+				else:
+					spim_str += "\t%s $%s, $%s\n\tmflo $%s\n"%(op, self.children[0].reg, self.children[1].reg, reg1)
+			elif astNode.name in ["GT", "LT", "GE", "LE", "EQ", "NE"] and is_float:
+				if astNode.name in ["LT", "LE", "EQ", "NE"]:
+					reg_l = self.children[0].reg
+					reg_r = self.children[1].reg
+				else:
+					reg_r = self.children[0].reg
+					reg_l = self.children[1].reg
+
+				global float_cond_counter
+				init_val = astNode.name == "NE"
+
+				spim_str += "\t%s $%s, $%s\n"%(op, reg_l, reg_r)
+				spim_str += "\tbc1f L_Cond%s_%d\n"%(init_val, float_cond_counter,)
+				spim_str += "\tli $%s, %d\n"%(reg1,1 - init_val)
+				spim_str += "\tj L_CondEnd_%d\n"%(float_cond_counter,)
+				spim_str += "L_Cond%s_%d:\n"%(init_val, float_cond_counter)
+				spim_str += "\tli $%s, %d\n"%(reg1, init_val)
+				spim_str += "L_CondEnd_%d:\n"%(float_cond_counter,)
+				float_cond_counter += 1
+
+				
+			else:
+				spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
+
 			free_register(self.children[0].reg)
 			free_register(self.children[1].reg)
-			reg2  =get_register(is_float=is_float)
+			reg2  =get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			spim_str += "\t%s $%s, $%s\n"%(move_instr, reg2, reg1)
 			self.reg = reg2
 			self.is_expression = True
@@ -502,11 +565,20 @@ class CFG_Node:
 				spim_str += "\t%s $v1, $%s # move return value to $v1\n"%(instr, self.children[0].reg)
 			spim_str += "\tj epilogue_%s\n"%(function.name,)
 		elif astNode.name == "ADDR":
-			reg = get_register(is_float=is_float)
+			reg = get_register(is_float=False)
 			offset = function.scope.symbols[astNode.children[0].value].offset
 			spim_str += "\taddi $%s, $sp, %d\n"%(reg, offset)
 			self.reg = reg
 			self.is_expression = False
+		elif astNode.name == "NOT":
+			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
+			reg = get_register(is_float=False)
+			spim_str += "\txori $%s, $%s, 1\n"%(reg, self.children[0].reg)
+			free_register(self.children[0].reg)
+			reg2 = get_register(is_float=False)
+			spim_str += "\tmove $%s, $%s\n"%(reg2, reg)
+			free_register(reg)
+			self.reg = reg2
 		else:
 			print(astNode.name)
 			exit(1)
@@ -652,8 +724,15 @@ def p_function(p):
 			added_globals = True
 			print_globals()
 		print_prologue(function_name)
-		mips_str = cfg_node.to_spim(ast_node, current_ST_node.symbols[function_name], -1)
-		ret_mips_str = cfg_return.to_spim(return_ast, current_ST_node.symbols[function_name], block_id-1)
+		
+		# print ("done")
+		if block_id == start_block:
+			mips_str = ""
+			ret_mips_str = cfg_return.to_spim(return_ast, current_ST_node.symbols[function_name], -1)
+		else:
+			mips_str = cfg_node.to_spim(ast_node, current_ST_node.symbols[function_name], -1)
+			ret_mips_str = cfg_return.to_spim(return_ast, current_ST_node.symbols[function_name], block_id-1)
+
 		spimfile.write(mips_str)
 		spimfile.write(ret_mips_str)
 		print_epilogue(function_name)
@@ -1021,6 +1100,11 @@ def p_arglist(p):
 		p[0] = AST_Node("ARGLIST", children=[p[1]])
 	else:
 		p[0] = AST_Node("ARGLIST", children=p[1].children + [p[3]])
+
+def p_condition_not(p):
+	"""condition : NOT condition"""
+	p[0] = AST_Node("NOT", children = [p[2]])
+	p[0].data_type = ('bool', 0)
 
 def p_condition_ee(p):
 	"""condition : expression EE expression"""

@@ -4,7 +4,12 @@ int *d;
 
 void main(){
 	
+	int *a, *b, *c, *d;
+	float *p, *q, *r, *s;
 
-	float *x, *y, *z;
-	*x = *y + *z + *z + *x + *y + *z;
+
+	if(*b < *c + 1){
+		
+		*a = 1;
+	}
 }

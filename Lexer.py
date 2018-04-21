@@ -18,6 +18,8 @@ tokens = (
 	'PLUS',
 	'MINUS',
 
+	'NOT',
+
 	'LT',
 	'GT',
 	'LTE',
@@ -119,10 +121,17 @@ t_LT = r'<'
 t_GT = r'>'
 t_LTE = r'<='
 t_GTE = r'>='
-t_EE = r'=='
-t_NE = r'!='
+
+def t_EE(t):
+	r'=='
+	return t
+
+def t_NE(t):
+	r'!='
+	return t
 # t_BAND = r'&'
 t_PIPE = r'\|'
+t_NOT = r'\!'
 
 lexer = lex.lex()
 
