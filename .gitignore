@@ -5,3 +5,4 @@
 *.pyc
 *.out
 *tab.py
+__pycache__/*
