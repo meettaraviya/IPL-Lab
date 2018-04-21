@@ -1,5 +1,8 @@
-*
-
-!.gitignore
-!Lexer.py
-!Parser.py
+*.ast
+*.s
+*.cfg
+*.sym
+*.pyc
+*.out
+*tab.py
+__pycache__/*
