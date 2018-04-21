@@ -392,15 +392,37 @@ class CFG_Node:
 					prev_reg = self.children[i].reg
 				else:
 					prev_reg = None
+		elif astNode.name == "ARGLIST":
+			offset = 0
+			for i in range(len(self.children)):
+				param = astNode.children[i].data_type
+				print param
+				if (param[0] == "float" and param[1] == 0):
+					offset += 8
+				else:
+					offset += 4
+			self.offset = offset
+			for i in range(len(self.children)):
+				param = astNode.children[i].data_type
+				if (param[0] == "float" and param[1] == 0):
+					offset -= 8
+				else:
+					offset -= 4
+				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
+				spim_str += "\tsw $%s, %d($sp)\n"%(self.children[i].reg, -offset, )
+				free_register(self.children[i].reg)
+
+
 		elif astNode.name == "FCALL":
-			print('FCALL')
-			print(astNode.data_type)
-			print(astNode.children[0])
-			print(function.params)
-			for param in function.params:
-				print(param.name, param.offset)
-			exit(1)
-			pass
+			spim_str += "\t# setting up activation record for called function\n";
+			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
+			spim_str += "\tsub $sp, $sp, %d\n"%(self.children[0].offset,)
+			spim_str += "\tjal %s # function call\n"%(astNode.value,)
+			spim_str += "\tadd $sp, $sp, %d # destroying activation record of called function\n"%(self.children[0].offset,)
+			if not astNode.is_statement:
+				self.reg = get_register()
+				spim_str += "\tmove $%s, $v1 # using the return value of called function\n"%(self.reg,)
+
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
 			
