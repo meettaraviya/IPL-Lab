@@ -47,7 +47,7 @@ op_int_mips = {
 		"MINUS":"sub",
 		"MUL":"mul",
 		"DIV":"/",
-		"LT":"<",
+		"LT":"slt",
 		"GT":">",
 		"LE":"<=",
 		"GE":">=",
@@ -155,6 +155,10 @@ registers = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
 	}
 
+def reset_registers():
+	for reg in registers.keys():
+		registers[reg] = True
+
 def get_register():
 	for reg in sorted(registers.keys()):
 		if (registers[reg]):
@@ -180,24 +184,27 @@ def print_globals():
 def print_prologue(name):
 	offset = global_symbols.symbols[name].offset
 	spimfile.write("\t.text	# The .text assembler directive indicates\n")
-	spimfile.write("\t.globs "+name+"	# The following is the code\n"+name+":\n#Prologue begins\n")
+	spimfile.write("\t.globl "+name+"	# The following is the code\n"+name+":\n# Prologue begins\n")
 	spimfile.write("\tsw $ra, 0($sp)	# Save the return address\n\tsw $fp, -4($sp)	# Save the frame pointer\n\tsub $fp, $sp, 8	# Update the frame pointer\n")
 	spimfile.write("\tsub $sp, $sp, %d	# Make space for the locals\n"%offset)
-	spimfile.write("#Prologue ends\n")
+	spimfile.write("# Prologue ends\n")
 
 def print_epilogue(name):
 	offset = global_symbols.symbols[name].offset
-	spimfile.write("\nepilogue_"+name+":\n#Epilogue begins\n")
+	spimfile.write("\n# Epilogue begins\nepilogue_"+name+":\n")
 	spimfile.write("\tadd $sp, $sp, %d\n"%offset)
 	spimfile.write("\tlw $fp, -4($sp)\n\tlw $ra, 0($sp)\n\tjr $ra	# Jump back to the called procedure\n")
-	spimfile.write("#Epilogue ends\n")
+	spimfile.write("# Epilogue ends\n")
 
-def str_spim_jump(block):
-	goto = block_goto[block]
-	if not  goto[2]:
-		spim_str = "\tj label%d\n"%(goto[0],)
-	else:
-		pass
+def str_spim_jump(block, prev_reg):
+	spim_str = "" 
+	if block >= 0:
+		goto = block_goto[block]
+		if not  goto[2]:
+			spim_str = "\tj label%d\n"%(goto[0],)
+		else:
+			spim_str += "\tbne $%s, $0, label%d\n"%(prev_reg, goto[0])
+			spim_str += "\tj label%d\n"%(goto[1])
 	return spim_str
 
 
@@ -339,27 +346,28 @@ class CFG_Node:
 			block_goto[self.block] = (nextBlock, nextBlock, False)
 
 
-	def to_spim(self, astNode, function, prevBlock, is_lhs = False):
+	def to_spim(self, astNode, function, prevBlock, prev_reg = None, is_lhs = False):
 		spim_str = ""
 		currentBlock = self.block
 		if prevBlock != currentBlock:
-			if prevBlock != -1:
-				spim_str += str_spim_jump(prevBlock)
+			spim_str += str_spim_jump(prevBlock, prev_reg)
 			spim_str += "label%d:\n"%(currentBlock,)
+			reset_registers()
 		if astNode.name=="STMLIST" or astNode.name=="IF" or astNode.name=="WHILE":
 			for i in range(len(self.children)):
-				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
+				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock, prev_reg = prev_reg)
 				currentBlock = self.children[i].block
+				if hasattr(self.children[i], "reg"):
+					prev_reg = self.children[i].reg
+				else:
+					prev_reg = None
 		elif astNode.name == "FCALL":
 			pass
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
-			reg = get_register()
-			spim_str += "\tmove $%s, $%s\n"%(reg, self.children[1].reg)
-			free_register(self.children[1].reg)
 			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock, is_lhs = True)
-			spim_str += "\tsw $%s, 0($%s)\n"%(reg, self.children[0].reg)
-			free_register(reg)
+			spim_str += "\tsw $%s, 0($%s)\n"%(self.children[1].reg, self.children[0].reg)
+			free_register(self.children[1].reg)
 			free_register(self.children[0].reg)
 
 		elif astNode.name == "VAR":
@@ -392,14 +400,21 @@ class CFG_Node:
 		elif astNode.name in op_int_mips:
 			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
 			spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
-			reg = get_register()
+			reg1 = get_register()
 			op = op_int_mips[astNode.name]
-			spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg, self.children[0].reg, self.children[1].reg)
-			self.reg = reg
-			self.is_expression = True
+			spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
 			free_register(self.children[0].reg)
 			free_register(self.children[1].reg)
-
+			reg2  =get_register()
+			spim_str += "\tmove $%s, $%s\n"%(reg2, reg1)
+			self.reg = reg2
+			self.is_expression = True
+			free_register(reg1)
+		elif astNode.name == "RETURN ":
+			if self.children:
+				spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
+				spim_str += "\tmove $v1, $%s # move return value to $v1\n"%(self.children[0].reg)
+			spim_str += "\tj epilogue_%s\n"%(function.name,)
 		return spim_str
 
 	def to_str(self, start_block):
@@ -543,8 +558,9 @@ def p_function(p):
 			print_globals()
 		print_prologue(function_name)
 		mips_str = cfg_node.to_spim(ast_node, current_ST_node.symbols[function_name], -1)
-		
+		ret_mips_str = cfg_return.to_spim(return_ast, current_ST_node.symbols[function_name], block_id-1)
 		spimfile.write(mips_str)
+		spimfile.write(ret_mips_str)
 		print_epilogue(function_name)
 
 def p_function_var(p):
