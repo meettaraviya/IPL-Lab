@@ -110,13 +110,12 @@ class Scope:
 	def calculate_offsets(self):
 		local_vars = []
 		offset = 0
-		# print(self.function.name)
 		for name in sorted(self.symbols.keys()):
 			variable = self.symbols[name]
-			# print(name, variable.is_param)
 			if not variable.is_param:
 				offset += variable.width
 				variable.offset = offset
+				print (name,offset, variable.width)
 		offset += 8 # for fp and ra
 		self.function.offset = offset
 
@@ -124,10 +123,8 @@ class Scope:
 			variable = self.symbols[param.name]
 			offset += variable.width
 			variable.offset = offset
+			print (param.name, offset, variable.width)
 
-		# print(self.function.name)
-		# for name in sorted(self.symbols.keys()):
-		# 	print(name, self.symbols[name].offset)
 
 
 
@@ -408,9 +405,6 @@ class CFG_Node:
 				currentBlock = self.children[i].block
 				if hasattr(self.children[i], "reg"):
 					child_prev_reg = self.children[i].reg
-					# spim_str += str_spim_jump(self.children[i].block, child_prev_reg)
-				# elif i==len(astNode.children)-1 or astNode.children[i+1].name in ['IF', 'WHILE']:
-				# 	spim_str += str_spim_jump(self.children[i].block, None)
 				else:
 					child_prev_reg = None
 
@@ -418,31 +412,31 @@ class CFG_Node:
 			offset = 0
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				if (param[0] == "float" and param[1] == 0):
+				is_float = (param[0] == 'float' and param[1] == 0)
+				if is_float:
 					offset += 8
 				else:
 					offset += 4
 			self.offset = offset
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				is_float = param[0] == 'float'
+				is_float = (param[0] == 'float' and param[1] == 0)
 				instr = ['sw', 's.s'][is_float]
-				if (param[0] == "float" and param[1] == 0):
+				if is_float:
 					offset -= 8
 				else:
 					offset -= 4
 				if astNode.children[i].name in op_int_mips:
 					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
-					print(i, astNode.children[i], astNode.children[i].reg)
-				print(spim_str)
+					print(i, astNode.children[i], self.children[i].reg)
+				
 			spim_str += "\t# setting up activation record for called function\n";
-			
 			offset = self.offset	
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				is_float = param[0] == 'float'
+				is_float = (param[0] == 'float' and param[1] == 0)
 				instr = ['sw', 's.s'][is_float]
-				if (param[0] == "float" and param[1] == 0):
+				if is_float:
 					offset -= 8
 				else:
 					offset -= 4
@@ -455,19 +449,23 @@ class CFG_Node:
 
 
 		elif astNode.name == "FCALL":
-			# spim_str += "\t# setting up activation record for called function\n";
 			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
 			spim_str += "\tsub $sp, $sp, %d\n"%(self.children[0].offset,)
 			spim_str += "\tjal %s # function call\n"%(astNode.value,)
 			spim_str += "\tadd $sp, $sp, %d # destroying activation record of called function\n"%(self.children[0].offset,)
 			if not astNode.is_statement:
-				self.reg = get_register()
-				spim_str += "\tmove $%s, $v1 # using the return value of called function\n"%(self.reg,)
+				rvalue = astNode.data_type
+				is_float = rvalue[0] == 'float' and rvalue[1] == 0
+				print (rvalue,is_float)
+				self.reg = get_register(is_float = is_float)
+				return_reg = ['v1', 'f0'][is_float]
+				instr = ['move', 'mov.s'][is_float]
+				spim_str += "\t%s $%s, $%s # using the return value of called function\n"%(instr, self.reg, return_reg,)
 
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
-			
-			is_float = astNode.children[1].data_type[0] == 'float'
+			param = astNode.children[1].data_type
+			is_float = (param[0] == 'float' and param[1] == 0)
 			instr = ['sw', 's.s'][is_float]
 
 			if astNode.children[0].name == "DEREF":
@@ -579,11 +577,13 @@ class CFG_Node:
 			self.is_expression = True
 			free_register(reg1)
 		elif astNode.name == "RETURN ":
-			is_float = astNode.data_type.type == 'float'
-			instr = ['move', 'mov.s'][is_float]
 			if self.children:
+				rvalue = astNode.children[0].data_type
+				is_float = (rvalue[0] == 'float' and rvalue[1] == 0)
+				instr = ['move', 'mov.s'][is_float]
+				return_reg = ['v1', 'f0'][is_float]
 				spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
-				spim_str += "\t%s $v1, $%s # move return value to $v1\n"%(instr, self.children[0].reg)
+				spim_str += "\t%s $%s, $%s # move return value to $%s\n"%(instr, return_reg, self.children[0].reg, return_reg,)
 			spim_str += "\tj epilogue_%s\n"%(function.name,)
 		elif astNode.name == "ADDR":
 			reg = get_register(is_float=False)
@@ -773,9 +773,14 @@ def p_paramlist(p):
 	if len(p)==2:
 		p[0] = []
 	elif len(p)==3:
-		p[0] = [Type(p[2][0], p[2][1], p[1], 4, None, is_param=True)]
+		is_float = p[1] == 'float' and p[2][1] == 0
+		width = [4,8][is_float]
+		p[0] = [Type(p[2][0], p[2][1], p[1], width, None, is_param=True)]
 	else:
-		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], 4, None, is_param=True)]
+		print (p[4])
+		is_float = p[3] == 'float' and p[4][1] == 0
+		width = [4,8][is_float]
+		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], width, None, is_param=True)]
 
 def p_function_body(p):
 	"""function_body : statement_list return_statement"""	
@@ -921,7 +926,9 @@ def p_declaration(p):
 			print('Variable declared again %s'%(var[0],))
 			exit(1)
 		else:
-			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], 4, 0)
+			is_float = p[1] == 'float' and var[1] == 0
+			width = [4,8][is_float]
+			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], width, 0)
 	p[0] = AST_Node('DECL')
 
 def p_decl_var_list(p):
