@@ -1,0 +1,52 @@
+examples/6.c
+1,25d0
+< -----------------------------------------------------------------
+< -----------------------------------------------------------------
+< -----------------------------------------------------------------
+< -----------------------------------------------------------------
+< -----------------------------------------------------------------
+< -----------------------------------------------------------------
+< a		|	procedure f3	|	int	   |	
+< a		|	procedure f4	|	int	   |	
+< b		|	procedure f3	|	int	   |	*
+< b		|	procedure f4	|	int	   |	
+< c		|	procedure f3	|	int	   |	**
+< c		|	procedure f4	|	int	   |	**
+< d		|	global		|	int	   |	*
+< f3		|	float		|	int a, int aint *b, int *bfloat *x, float *xfloat *y
+< f4		|	void		|	int a, int aint b
+< m		|	procedure f3	|	int	   |	
+< m		|	procedure f4	|	int	   |	
+< Name		|	Return Type  |  Parameter List
+< Name	|	Scope		|	Base Type  |  Derived Type
+< Procedure table :-
+< Variable table :- 
+< x		|	procedure f1	|	int	   |	
+< x		|	procedure f3	|	float	   |	*
+< y		|	procedure f1	|	int	   |	*
+< y		|	procedure f3	|	float	   |	*
+examples/a.c
+28,30c33,35
+< f2		|	int		|	int x, int xint *y
+< f3		|	float		|	int x, int xint *y, int *yfloat *c, float *cfloat *d
+< f4		|	void		|	int a, int aint b, int bint x, int xint y, int yint a1, int a1int b1, int b1int x1, int x1int y1, int y1int a2, int a2int b2, int b2int x2, int x2int y2, int y2int a3, int a3int b3, int b3int x3, int x3int y3
+---
+> f2		|	int		|	int x, int *y
+> f3		|	float		|	int x, int *y, float *c, float *d
+> f4		|	void		|	int a, int b, int x, int y, int a1, int b1, int x1, int y1, int a2, int b2, int x2, int y2, int a3, int b3, int x3, int y3
+examples/t0.c
+examples/t10.c
+13c16
+< func1		|	void		|	int a, int aint b
+---
+> func1		|	void		|	int a, int b
+examples/t1.c
+examples/t2.c
+examples/t3.c
+examples/t4.c
+examples/t5.c
+examples/t6.c
+examples/t7.c
+examples/t8.c
+examples/t9.c
+examples/test.c

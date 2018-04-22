@@ -11,10 +11,10 @@ if len(sys.argv) < 2:
 file = open(sys.argv[1], 'r')
 program = file.read()
 file.close()
-astfile = open(sys.argv[1] + ".ast", 'w')
-cfgfile = open(sys.argv[1] + ".cfg", 'w')
-symfile = open(sys.argv[1] + ".sym", 'w')
-spimfile = open(sys.argv[1] + "2.s", 'w')
+astfile = open(sys.argv[1] + " 2.ast", 'w')
+cfgfile = open(sys.argv[1] + " 2.cfg", 'w')
+symfile = open(sys.argv[1] + " 2.sym", 'w')
+spimfile = open(sys.argv[1] + " 2.s", 'w')
 
 if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
@@ -85,8 +85,8 @@ class Scope:
 		string += "Name\t\t|\tReturn Type  |  Parameter List\n"
 		for symbol in sorted(self.symbols.keys()):
 			variable = self.symbols[symbol]
-			if variable.type == 'FUNCTION':
-				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t|\t%s\n'%(variable.getParams(),)
+			if variable.type == 'FUNCTION' and variable.name != 'main' and not variable.is_proto:
+				string += '%s\t\t|\t%s'%(variable.name, variable.return_type)+'\t\t|\t%s\n'%(variable.getAltParams(),)
 		string += "-----------------------------------------------------------------\n"
 		string += "Variable table :- \n"
 		string += "-----------------------------------------------------------------\n"
@@ -95,12 +95,19 @@ class Scope:
 		for symbol in sorted(self.symbols.keys()):
 			variable = self.symbols[symbol]
 			if variable.type != 'FUNCTION':
+				# print(variable.name, variable.indirection)
 				string += '%s\t\t|\tglobal\t\t|\t%s\t   |\t'%(variable.name, variable.type)+'*'*variable.indirection+'\n'
-			else:
+			elif not variable.is_proto:
 				string+='\n'
 				function_ST = variable.scope
 				for symbol,local_variable in function_ST.symbols.items():
-					string += '%s\t\t|\tprocedure %s\t|\t%s\t   |\t'%(local_variable.name, variable.name, local_variable.type)+'*'*variable.indirection+'\n'
+					# print(local_variable.name, local_variable.indirection)
+					string += '%s\t\t|\tprocedure %s\t|\t%s\t   |\t'%(local_variable.name, variable.name, local_variable.type)+'*'*local_variable.indirection+'\n'
+			else:
+				string+='\n'
+				for param in variable.params:
+					string += '%s\t\t|\tprocedure %s\t|\t%s\t   |\t'%(param.name, variable.name, param.type)+'*'*param.indirection+'\n'
+
 		string += "-----------------------------------------------------------------\n"
 		string += "-----------------------------------------------------------------\n"
 				
@@ -110,13 +117,12 @@ class Scope:
 	def calculate_offsets(self):
 		local_vars = []
 		offset = 0
-		# print(self.function.name)
 		for name in sorted(self.symbols.keys()):
 			variable = self.symbols[name]
-			# print(name, variable.is_param)
 			if not variable.is_param:
 				offset += variable.width
 				variable.offset = offset
+				
 		offset += 8 # for fp and ra
 		self.function.offset = offset
 
@@ -125,9 +131,6 @@ class Scope:
 			offset += variable.width
 			variable.offset = offset
 
-		# print(self.function.name)
-		# for name in sorted(self.symbols.keys()):
-		# 	print(name, self.symbols[name].offset)
 
 
 
@@ -148,9 +151,11 @@ class Type:
 		self.return_type = return_type
 		self.is_proto = is_proto
 
+	def getAltParams(self):
+		return ', '.join([param.type + ' ' + '*'*param.indirection + param.altname for param in self.params])
+
 	def getParams(self):
 		return ', '.join([param.type + ' ' + '*'*param.indirection + param.name for param in self.params])
-		# return '{%s}'%(','.join(["'%s' : '%s'"%(k.name,str(k)) for k in self.params]),)
 
 	def __str__(self):
 		return self.type+'*'*self.indirection
@@ -166,8 +171,7 @@ block_code = dict()
 block_goto = [None]
 registers_int = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
-	"t0":True,"t1":True,"t2":True,"t3":True,"t4":True,"t5":True,"t6":True,"t7":True,
-	"u0":True,"u1":True,"u2":True,"u3":True,"u4":True,"u5":True,"u6":True,"u7":True,
+	"t0":True,"t1":True,"t2":True,"t3":True,"t4":True,"t5":True,"t6":True,"t7":True,"t8":True,"t9":True,
 	}
 registers_float = {
 	"f2":True,"f4":True,"f6":True,"f8":True,
@@ -175,6 +179,10 @@ registers_float = {
 	"f20":True,"f22":True,"f24":True,"f26":True,"f28":True,
 	"f30":True,
 	}
+def print_status():
+	global registers_int
+	for reg in sorted(registers_int.keys()):
+		print (reg, registers_int[reg], end = "| ")
 
 def reset_registers():
 	global registers_float, registers_int
@@ -195,11 +203,10 @@ def get_register(is_float=False):
 				registers_int[reg] = False
 				return reg
 	print("Ran out of registers\n")
-	return 'XXX'
 	exit(1)
 
 def free_register(reg):
-	if reg[0]=='s':
+	if reg in registers_int:
 		registers_int[reg] = True
 	else:
 		registers_float[reg] = True
@@ -237,8 +244,6 @@ def str_spim_jump(block, prev_reg):
 	spim_str = "" 
 	if block >= 0 and block_goto[block] is not None:
 		goto = block_goto[block]
-		# print(block_goto)
-		# print (block, goto)
 		if not goto[2]:
 			spim_str = "\tj label%d\n"%(goto[0],)
 			reset_registers()
@@ -409,9 +414,6 @@ class CFG_Node:
 				currentBlock = self.children[i].block
 				if hasattr(self.children[i], "reg"):
 					child_prev_reg = self.children[i].reg
-					# spim_str += str_spim_jump(self.children[i].block, child_prev_reg)
-				# elif i==len(astNode.children)-1 or astNode.children[i+1].name in ['IF', 'WHILE']:
-				# 	spim_str += str_spim_jump(self.children[i].block, None)
 				else:
 					child_prev_reg = None
 
@@ -419,31 +421,30 @@ class CFG_Node:
 			offset = 0
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				if (param[0] == "float" and param[1] == 0):
+				is_float = (param[0] == 'float' and param[1] == 0)
+				if is_float:
 					offset += 8
 				else:
 					offset += 4
 			self.offset = offset
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				is_float = param[0] == 'float'
+				is_float = (param[0] == 'float' and param[1] == 0)
 				instr = ['sw', 's.s'][is_float]
-				if (param[0] == "float" and param[1] == 0):
+				if is_float:
 					offset -= 8
 				else:
 					offset -= 4
 				if astNode.children[i].name in op_int_mips:
-					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
-					print(i, astNode.children[i], self.children[i].reg)
-				print(spim_str)
+					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)	
+				
 			spim_str += "\t# setting up activation record for called function\n";
-			
 			offset = self.offset	
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				is_float = param[0] == 'float'
+				is_float = (param[0] == 'float' and param[1] == 0)
 				instr = ['sw', 's.s'][is_float]
-				if (param[0] == "float" and param[1] == 0):
+				if is_float:
 					offset -= 8
 				else:
 					offset -= 4
@@ -456,7 +457,6 @@ class CFG_Node:
 
 
 		elif astNode.name == "FCALL":
-			# spim_str += "\t# setting up activation record for called function\n";
 			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
 			spim_str += "\tsub $sp, $sp, %d\n"%(self.children[0].offset,)
 			spim_str += "\tjal %s # function call\n"%(astNode.value,)
@@ -466,13 +466,18 @@ class CFG_Node:
 			instr = ['move', 'mov.s'][is_float]
 			target_reg = ['v1', 'f0'][is_float]
 			if not astNode.is_statement:
-				self.reg = get_register()
-				spim_str += "\t%s $%s, $%s # using the return value of called function\n"%(instr, self.reg, target_reg)
+
+				rvalue = astNode.data_type
+				is_float = rvalue[0] == 'float' and rvalue[1] == 0
+				self.reg = get_register(is_float = is_float)
+				return_reg = ['v1', 'f0'][is_float]
+				instr = ['move', 'mov.s'][is_float]
+				spim_str += "\t%s $%s, $%s # using the return value of called function\n"%(instr, self.reg, return_reg,)
 
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
-			
-			is_float = astNode.children[1].data_type[0] == 'float'
+			param = astNode.children[1].data_type
+			is_float = (param[0] == 'float' and param[1] == 0)
 			instr = ['sw', 's.s'][is_float]
 
 			if astNode.children[0].name == "DEREF":
@@ -506,7 +511,6 @@ class CFG_Node:
 				is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				# is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				spim_str += "\t%s $%s, global_%s\n"%(instr, reg,astNode.value,)
-			# print('var', reg)
 			self.reg = reg
 			self.is_expression = False
 
@@ -576,7 +580,6 @@ class CFG_Node:
 				spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
 
 			free_register(self.children[0].reg)
-			print(str(self.children[1].reg))
 			free_register(self.children[1].reg)
 			reg2  =get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			spim_str += "\t%s $%s, $%s\n"%(move_instr, reg2, reg1)
@@ -584,12 +587,15 @@ class CFG_Node:
 			self.is_expression = True
 			free_register(reg1)
 		elif astNode.name == "RETURN ":
-			is_float = astNode.data_type.type == 'float'
-			instr = ['move', 'mov.s'][is_float]
-			target_reg = ['v1', 'f0'][is_float]
+
 			if self.children:
+				rvalue = astNode.children[0].data_type
+				is_float = (rvalue[0] == 'float' and rvalue[1] == 0)
+				instr = ['move', 'mov.s'][is_float]
+				return_reg = ['v1', 'f0'][is_float]
 				spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
-				spim_str += "\t%s $%s, $%s # move return value to $%s\n"%(instr, target_reg, self.children[0].reg, target_reg)
+				spim_str += "\t%s $%s, $%s # move return value to $%s\n"%(instr, return_reg, self.children[0].reg, return_reg,)
+
 			spim_str += "\tj epilogue_%s\n"%(function.name,)
 		elif astNode.name == "ADDR":
 			reg = get_register(is_float=False)
@@ -627,7 +633,7 @@ class CFG_Node:
 				else:
 					cfg_str += 'goto <bb %d>\n'%(t[0],)
 			cfg_str += '\n'
-		return cfg_str
+		return cfg_str.strip('\n')
 	
 class AST_Node:
 	def __init__(self,name,children=None, value=None):
@@ -779,9 +785,13 @@ def p_paramlist(p):
 	if len(p)==2:
 		p[0] = []
 	elif len(p)==3:
-		p[0] = [Type(p[2][0], p[2][1], p[1], 4, None, is_param=True)]
+		is_float = p[1] == 'float' and p[2][1] == 0
+		width = [4,8][is_float]
+		p[0] = [Type(p[2][0], p[2][1], p[1], width, None, is_param=True)]
 	else:
-		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], 4, None, is_param=True)]
+		is_float = p[3] == 'float' and p[4][1] == 0
+		width = [4,8][is_float]
+		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], width, None, is_param=True)]
 
 def p_function_body(p):
 	"""function_body : statement_list return_statement"""	
@@ -817,26 +827,30 @@ def p_function_dummy(p):
 			if known_return_type.type!=return_type.type or known_return_type.indirection!=return_type.indirection:
 				print('Return type not matching with prototype: %s'%(p[-4][0],))
 				exit(1)
-			else:
-				params_match = True
+			# else:
+			# 	params_match = True
 
-				if len(known_params)!=len(p[-2]):
-					params_match = False
-				i = 0
-				while i<len(known_params) and i<len(p[-2]):
-					if known_params[i].type!=p[-2][i].type or known_params[i].indirection!=p[-2][i].indirection:
-						params_match = False
-						break
-					i += 1
-				if not params_match:
+			if len(known_params)!=len(p[-2]):
+				print('Wrong number of params')
+				exit(1)
+				# params_match = False
+			i = 0
+			while i<len(known_params) and i<len(p[-2]):
+				if known_params[i].type!=p[-2][i].type or known_params[i].indirection!=p[-2][i].indirection:
 					print('Parameter %d not matching with prototype: %s'%(i,p[-4][0],))
 					exit(1)
+				else:
+					p[-2][i].altname = known_params[i].name
+				i += 1
+				
 
 
-		type = Type(p[-4][0], p[-4][-1], 'FUNCTION', 4, 0)
+		type = Type(p[-4][0], p[-4][1], 'FUNCTION', 4, 0)
 		scope = Scope(parent=current_ST_node, function=type)
 		for param in p[-2]:
 			scope.symbols[param.name] = param
+			if p[-4][0] not in current_ST_node.symbols:
+				param.altname = param.name
 		type.setFunctionProperties(scope, p[-2], return_type, is_proto=False)
 		param_same, param_name, prev_param = False, None, set()
 		for param in p[-2]:
@@ -927,7 +941,9 @@ def p_declaration(p):
 			print('Variable declared again %s'%(var[0],))
 			exit(1)
 		else:
-			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], 4, 0)
+			is_float = p[1] == 'float' and var[1] == 0
+			width = [4,8][is_float]
+			current_ST_node.symbols[var[0]] = Type(var[0], var[1], p[1], width, 0)
 	p[0] = AST_Node('DECL')
 
 def p_decl_var_list(p):
