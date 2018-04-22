@@ -195,6 +195,7 @@ def get_register(is_float=False):
 				registers_int[reg] = False
 				return reg
 	print("Ran out of registers\n")
+	return 'XXX'
 	exit(1)
 
 def free_register(reg):
@@ -433,7 +434,7 @@ class CFG_Node:
 					offset -= 4
 				if astNode.children[i].name in op_int_mips:
 					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
-					print(i, astNode.children[i], astNode.children[i].reg)
+					print(i, astNode.children[i], self.children[i].reg)
 				print(spim_str)
 			spim_str += "\t# setting up activation record for called function\n";
 			
@@ -460,9 +461,13 @@ class CFG_Node:
 			spim_str += "\tsub $sp, $sp, %d\n"%(self.children[0].offset,)
 			spim_str += "\tjal %s # function call\n"%(astNode.value,)
 			spim_str += "\tadd $sp, $sp, %d # destroying activation record of called function\n"%(self.children[0].offset,)
+			
+			is_float = astNode.data_type[0] == 'float'
+			instr = ['move', 'mov.s'][is_float]
+			target_reg = ['v1', 'f0'][is_float]
 			if not astNode.is_statement:
 				self.reg = get_register()
-				spim_str += "\tmove $%s, $v1 # using the return value of called function\n"%(self.reg,)
+				spim_str += "\t%s $%s, $%s # using the return value of called function\n"%(instr, self.reg, target_reg)
 
 		elif astNode.name == "ASGN":
 			spim_str += self.children[1].to_spim(astNode.children[1], function, currentBlock)
@@ -581,9 +586,10 @@ class CFG_Node:
 		elif astNode.name == "RETURN ":
 			is_float = astNode.data_type.type == 'float'
 			instr = ['move', 'mov.s'][is_float]
+			target_reg = ['v1', 'f0'][is_float]
 			if self.children:
 				spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
-				spim_str += "\t%s $v1, $%s # move return value to $v1\n"%(instr, self.children[0].reg)
+				spim_str += "\t%s $%s, $%s # move return value to $%s\n"%(instr, target_reg, self.children[0].reg, target_reg)
 			spim_str += "\tj epilogue_%s\n"%(function.name,)
 		elif astNode.name == "ADDR":
 			reg = get_register(is_float=False)
