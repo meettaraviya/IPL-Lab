@@ -115,7 +115,7 @@ class Scope:
 			if not variable.is_param:
 				offset += variable.width
 				variable.offset = offset
-				print (name,offset, variable.width)
+				
 		offset += 8 # for fp and ra
 		self.function.offset = offset
 
@@ -123,7 +123,6 @@ class Scope:
 			variable = self.symbols[param.name]
 			offset += variable.width
 			variable.offset = offset
-			print (param.name, offset, variable.width)
 
 
 
@@ -163,8 +162,7 @@ block_code = dict()
 block_goto = [None]
 registers_int = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
-	"t0":True,"t1":True,"t2":True,"t3":True,"t4":True,"t5":True,"t6":True,"t7":True,
-	"u0":True,"u1":True,"u2":True,"u3":True,"u4":True,"u5":True,"u6":True,"u7":True,
+	"t0":True,"t1":True,"t2":True,"t3":True,"t4":True,"t5":True,"t6":True,"t7":True,"t8":True,"t9":True,
 	}
 registers_float = {
 	"f2":True,"f4":True,"f6":True,"f8":True,
@@ -172,6 +170,10 @@ registers_float = {
 	"f20":True,"f22":True,"f24":True,"f26":True,"f28":True,
 	"f30":True,
 	}
+def print_status():
+	global registers_int
+	for reg in sorted(registers_int.keys()):
+		print (reg, registers_int[reg], end = "| ")
 
 def reset_registers():
 	global registers_float, registers_int
@@ -192,10 +194,9 @@ def get_register(is_float=False):
 				registers_int[reg] = False
 				return reg
 	print("Ran out of registers\n")
-	exit(1)
-
+	
 def free_register(reg):
-	if reg[0]=='s':
+	if reg in registers_int:
 		registers_int[reg] = True
 	else:
 		registers_float[reg] = True
@@ -233,8 +234,6 @@ def str_spim_jump(block, prev_reg):
 	spim_str = "" 
 	if block >= 0 and block_goto[block] is not None:
 		goto = block_goto[block]
-		# print(block_goto)
-		# print (block, goto)
 		if not goto[2]:
 			spim_str = "\tj label%d\n"%(goto[0],)
 			reset_registers()
@@ -427,8 +426,7 @@ class CFG_Node:
 				else:
 					offset -= 4
 				if astNode.children[i].name in op_int_mips:
-					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
-					print(i, astNode.children[i], self.children[i].reg)
+					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)	
 				
 			spim_str += "\t# setting up activation record for called function\n";
 			offset = self.offset	
@@ -456,7 +454,6 @@ class CFG_Node:
 			if not astNode.is_statement:
 				rvalue = astNode.data_type
 				is_float = rvalue[0] == 'float' and rvalue[1] == 0
-				print (rvalue,is_float)
 				self.reg = get_register(is_float = is_float)
 				return_reg = ['v1', 'f0'][is_float]
 				instr = ['move', 'mov.s'][is_float]
@@ -499,7 +496,6 @@ class CFG_Node:
 				is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				# is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				spim_str += "\t%s $%s, global_%s\n"%(instr, reg,astNode.value,)
-			# print('var', reg)
 			self.reg = reg
 			self.is_expression = False
 
@@ -569,7 +565,6 @@ class CFG_Node:
 				spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
 
 			free_register(self.children[0].reg)
-			print(str(self.children[1].reg))
 			free_register(self.children[1].reg)
 			reg2  =get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			spim_str += "\t%s $%s, $%s\n"%(move_instr, reg2, reg1)
@@ -777,7 +772,6 @@ def p_paramlist(p):
 		width = [4,8][is_float]
 		p[0] = [Type(p[2][0], p[2][1], p[1], width, None, is_param=True)]
 	else:
-		print (p[4])
 		is_float = p[3] == 'float' and p[4][1] == 0
 		width = [4,8][is_float]
 		p[0] = p[1] + [Type(p[4][0], p[4][1], p[3], width, None, is_param=True)]
