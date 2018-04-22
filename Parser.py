@@ -14,7 +14,7 @@ file.close()
 astfile = open(sys.argv[1] + ".ast", 'w')
 cfgfile = open(sys.argv[1] + ".cfg", 'w')
 symfile = open(sys.argv[1] + ".sym", 'w')
-spimfile = open(sys.argv[1] + ".s", 'w')
+spimfile = open(sys.argv[1] + "2.s", 'w')
 
 if astfile is None or cfgfile is None or symfile is None:
 	print("Could not open file")
@@ -68,8 +68,6 @@ op_float_mips = {
 		"GE":"c.le.s",
 		"EQ":"c.eq.s",
 		"NE":"c.eq.s",
-		"AND":"&&",
-		"OR":"||",
 	}
 
 class Scope:
@@ -168,6 +166,8 @@ block_code = dict()
 block_goto = [None]
 registers_int = {
 	"s0":True,"s1":True,"s2":True,"s3":True,"s4":True,"s5":True,"s6":True,"s7":True,
+	"t0":True,"t1":True,"t2":True,"t3":True,"t4":True,"t5":True,"t6":True,"t7":True,
+	"u0":True,"u1":True,"u2":True,"u3":True,"u4":True,"u5":True,"u6":True,"u7":True,
 	}
 registers_float = {
 	"f2":True,"f4":True,"f6":True,"f8":True,
@@ -194,6 +194,8 @@ def get_register(is_float=False):
 			if (registers_int[reg]):
 				registers_int[reg] = False
 				return reg
+	print("Ran out of registers\n")
+	exit(1)
 
 def free_register(reg):
 	if reg[0]=='s':
@@ -416,7 +418,6 @@ class CFG_Node:
 			offset = 0
 			for i in range(len(self.children)):
 				param = astNode.children[i].data_type
-				# print(param)
 				if (param[0] == "float" and param[1] == 0):
 					offset += 8
 				else:
@@ -430,13 +431,31 @@ class CFG_Node:
 					offset -= 8
 				else:
 					offset -= 4
-				spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
+				if astNode.children[i].name in op_int_mips:
+					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
+					print(i, astNode.children[i], astNode.children[i].reg)
+				print(spim_str)
+			spim_str += "\t# setting up activation record for called function\n";
+			
+			offset = self.offset	
+			for i in range(len(self.children)):
+				param = astNode.children[i].data_type
+				is_float = param[0] == 'float'
+				instr = ['sw', 's.s'][is_float]
+				if (param[0] == "float" and param[1] == 0):
+					offset -= 8
+				else:
+					offset -= 4
+					
+				if astNode.children[i].name not in op_int_mips:
+					spim_str += self.children[i].to_spim(astNode.children[i], function, currentBlock)
+						
 				spim_str += "\t%s $%s, %d($sp)\n"%(instr, self.children[i].reg, -offset, )
 				free_register(self.children[i].reg)
 
 
 		elif astNode.name == "FCALL":
-			spim_str += "\t# setting up activation record for called function\n";
+			# spim_str += "\t# setting up activation record for called function\n";
 			spim_str += self.children[0].to_spim(astNode.children[0], function, currentBlock)
 			spim_str += "\tsub $sp, $sp, %d\n"%(self.children[0].offset,)
 			spim_str += "\tjal %s # function call\n"%(astNode.value,)
@@ -482,6 +501,7 @@ class CFG_Node:
 				is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				# is_float = current_ST_node.symbols[astNode.value].type == 'float'
 				spim_str += "\t%s $%s, global_%s\n"%(instr, reg,astNode.value,)
+			# print('var', reg)
 			self.reg = reg
 			self.is_expression = False
 
@@ -511,12 +531,12 @@ class CFG_Node:
 			instr_dict = [op_int_mips, op_float_mips][is_float]
 			move_instr = ['move', 'mov.s'][is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"]]
 			
-			# if astNode.name in ["GT", "LT", "GE", "LE", "EQ", "NE"] and self.children[1].is_expression and not self.children[0].is_expression:
-			# 	spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
-			# 	spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
-			# else:
-			spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
-			spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
+			if astNode.name in ["GT", "LT", "GE", "LE", "EQ", "NE"] and astNode.children[0].name not in op_int_mips and astNode.children[1].name in op_int_mips:
+				spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
+				spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
+			else:
+				spim_str += self.children[0].to_spim(astNode.children[0], function,  currentBlock)
+				spim_str += self.children[1].to_spim(astNode.children[1], function,  currentBlock)
 			reg1 = get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			op = instr_dict[astNode.name]
 			if (astNode.name=='GT' or astNode.name=='GE') and not is_float:
@@ -551,6 +571,7 @@ class CFG_Node:
 				spim_str += "\t%s $%s, $%s, $%s\n"%(op, reg1, self.children[0].reg, self.children[1].reg)
 
 			free_register(self.children[0].reg)
+			print(str(self.children[1].reg))
 			free_register(self.children[1].reg)
 			reg2  =get_register(is_float=is_float and astNode.name not in ["GT", "LT", "GE", "LE", "EQ", "NE"])
 			spim_str += "\t%s $%s, $%s\n"%(move_instr, reg2, reg1)
